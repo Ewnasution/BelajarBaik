@@ -2,7 +2,7 @@ import { DEFAULT_SETTINGS } from './data/presets.js';
 let database;
 export function openDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('sakinah-planner', 1);
+    const request = indexedDB.open('yawm-planner', 1);
     request.onupgradeneeded = () => {
       const store = request.result.createObjectStore('profiles', { keyPath: 'userId' });
       store.createIndex('userId', 'userId', { unique: true });

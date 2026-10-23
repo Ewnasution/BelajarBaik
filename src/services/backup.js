@@ -22,7 +22,7 @@ export function validateSettings(s) {
   return s;
 }
 export function validateBackup(input) {
-  if (!object(input) || input.app !== 'sakinah' || input.schemaVersion !== 1 || !object(input.data)) fail();
+  if (!object(input) || input.app !== 'yawm' || input.schemaVersion !== 1 || !object(input.data)) fail();
   const d = input.data;
   if (d.schemaVersion !== 1 || !key(d.userId) || !object(d.days) || !object(d.notes) || !object(d.fasting)) fail();
   validateSettings(d.settings);
@@ -57,7 +57,7 @@ export function validateBackup(input) {
   if (raw.length > 5 * 1024 * 1024 || /"(?:__proto__|constructor|prototype)"\s*:/.test(raw)) fail();
   return structuredClone(d);
 }
-export const makeBackup = data => ({ app: 'sakinah', schemaVersion: 1, exportedAt: new Date().toISOString(), data });
+export const makeBackup = data => ({ app: 'yawm', schemaVersion: 1, exportedAt: new Date().toISOString(), data });
 export function restoreBackup(current, imported, mode) {
   const incoming = structuredClone(imported);
   incoming.userId = current.userId;

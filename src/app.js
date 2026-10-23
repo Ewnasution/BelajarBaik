@@ -15,7 +15,7 @@ import { makeBackup, validateBackup, validateSettings, restoreBackup } from './s
 const app = document.querySelector('#app'), modal = document.querySelector('#modal');
 const readPreference = key => { try { return localStorage.getItem(key); } catch { return null; } };
 const preference = (key, value) => { try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch { /* Session still works without remembered preferences. */ } };
-const state = { data: null, screen: 'home', selected: dateKey(), month: dateKey().slice(0, 7), financeStart: '', financeEnd: '', period: 'weekly', category: 'all', status: 'all', priority: 'all', language: readPreference('sakinah-language') || 'id', cache: 'caching' };
+const state = { data: null, screen: 'home', selected: dateKey(), month: dateKey().slice(0, 7), financeStart: '', financeEnd: '', period: 'weekly', category: 'all', status: 'all', priority: 'all', language: readPreference('yawm-language') || 'id', cache: 'caching' };
 let mutationQueue = Promise.resolve(), busy = false, appearanceDraft, pendingImport, installPrompt, lastFocus, toastTimer;
 const e = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const s = () => state.data?.settings || { ...DEFAULT_SETTINGS, language: state.language };
@@ -80,7 +80,7 @@ function render() {
   const profile = USERS.find(u => u.id === state.data.userId), name = s().displayName || t(profile.id === 'family' ? 'family' : 'personal');
   const connection = navigator.onLine ? 'online' : 'offline';
   app.innerHTML = `<a href="#main" class="skip-link">${e(t('skipContent'))}</a>
-    <header class="topbar"><div class="topbar-inner"><a href="#home" class="brand" data-nav="home"><span class="brand-icon">${icon('leaf')}</span><span>Sakinah<small>MUSLIM DAILY PLANNER</small></span></a>
+    <header class="topbar"><div class="topbar-inner"><a href="#home" class="brand" data-nav="home"><span class="brand-icon">${icon('leaf')}</span><span>Yawm<small>MUSLIM DAILY PLANNER</small></span></a>
     <div class="header-end"><span class="connection ${connection}"><i></i>${e(t(connection))}</span><span class="header-divider"></span><button class="profile-button" data-nav="settings" aria-label="${e(t('profile'))}"><span class="avatar">${e(name[0]?.toUpperCase())}</span><span class="profile-name">${e(name)}</span>${icon('chevron')}</button></div></div></header>
     <main id="main" class="container" tabindex="-1">${({ home: renderHome, routines: renderRoutines, finance: renderFinance, analytics: renderAnalytics, settings: renderSettings })[state.screen]()}</main>
     <nav class="bottom-nav" aria-label="${e(t('mainNavigation'))}">${['home', 'routines', 'finance', 'analytics', 'settings'].map(page => `<button data-nav="${page}" class="nav-item ${page === state.screen ? 'active' : ''}" ${page === state.screen ? 'aria-current="page"' : ''}>${icon(page)}<span>${e(t(page))}</span>${page === state.screen ? '<i></i>' : ''}</button>`).join('')}</nav>`;
@@ -89,16 +89,16 @@ function render() {
 }
 function renderLogin() {
   applyAppearance(s());
-  app.innerHTML = `<main class="login-layout"><section class="login-story"><a class="brand"><span class="brand-icon">${icon('leaf')}</span><span>Sakinah<small>MUSLIM DAILY PLANNER</small></span></a>
+  app.innerHTML = `<main class="login-layout"><section class="login-story"><a class="brand"><span class="brand-icon">${icon('leaf')}</span><span>Yawm<small>MUSLIM DAILY PLANNER</small></span></a>
     <div class="story-content"><span class="eyebrow">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</span><h1>${e(t('tagline'))}</h1><p>${e(t('intro'))}</p><div class="story-lines"><span>${icon('sun')}${e(t('routines'))}</span><span>${icon('book')}${e(t('quranTarget'))}</span><span>${icon('finance')}${e(t('finance'))}</span></div></div>
     <div class="story-foot">${icon('shield')}<span>${e(t('private'))} · ${e(t('offlineReady'))}</span></div><div class="story-ornament" aria-hidden="true"></div></section>
-    <section class="login-panel"><button class="language-switch" data-action="login-language">${state.language === 'ar' ? 'Indonesia' : 'العربية'}</button><div class="login-form"><span class="small-mark">${icon('leaf')}</span><p class="eyebrow">${e(t('welcome'))}</p><h2>${e(t('greeting'))}</h2><p class="muted">${e(t('chooseProfile'))}</p><form id="login-form"><div class="profile-options">${USERS.filter(u => u.enabled).map((u, i) => `<label class="profile-option"><input type="radio" name="userId" value="${u.id}" ${i === 0 ? 'checked' : ''}><span class="avatar">${icon(u.id === 'family' ? 'home' : 'leaf')}</span><span>${e(t(u.id === 'family' ? 'family' : 'personal'))}</span><span class="radio-dot"></span></label>`).join('')}</div><button class="button primary full" type="submit">${e(t('login'))}${icon('arrow')}</button><p class="form-error" role="alert"></p></form><p class="local-notice">${icon('shield')}${e(t('localNotice'))}</p></div><small class="login-version">Sakinah · 1.0</small></section></main>`;
+    <section class="login-panel"><button class="language-switch" data-action="login-language">${state.language === 'ar' ? 'Indonesia' : 'العربية'}</button><div class="login-form"><span class="small-mark">${icon('leaf')}</span><p class="eyebrow">${e(t('welcome'))}</p><h2>${e(t('greeting'))}</h2><p class="muted">${e(t('chooseProfile'))}</p><form id="login-form"><div class="profile-options">${USERS.filter(u => u.enabled).map((u, i) => `<label class="profile-option"><input type="radio" name="userId" value="${u.id}" ${i === 0 ? 'checked' : ''}><span class="avatar">${icon(u.id === 'family' ? 'home' : 'leaf')}</span><span>${e(t(u.id === 'family' ? 'family' : 'personal'))}</span><span class="radio-dot"></span></label>`).join('')}</div><button class="button primary full" type="submit">${e(t('login'))}${icon('arrow')}</button><p class="form-error" role="alert"></p></form><p class="local-notice">${icon('shield')}${e(t('localNotice'))}</p></div><small class="login-version">Yawm · 1.0</small></section></main>`;
 }
 function dateControl() {
   return `<div class="date-control">${act('date-prev', t('back'), 'chevron', 'icon-button previous')}<label><span class="sr-only">${e(t('date'))}</span><input type="date" data-control="date" value="${state.selected}" min="1900-01-01" max="2200-12-31"></label>${act('date-next', t('next'), 'chevron', 'icon-button')}${act('date-today', t('today'), '', 'button text')}</div>`;
 }
 function pageIntro(title, subtitle, action = '') {
-  return `<div class="page-intro"><div><p class="eyebrow">SAKINAH / ${e(t('dailySpace'))}</p><h1>${e(title)}</h1><p class="intro-subtitle">${e(subtitle)}</p></div>${action}</div>`;
+  return `<div class="page-intro"><div><p class="eyebrow">YAWM / ${e(t('dailySpace'))}</p><h1>${e(title)}</h1><p class="intro-subtitle">${e(subtitle)}</p></div>${action}</div>`;
 }
 function taskRows(items, day = state.data.days[state.selected]) {
   const times = prayerTimes(state.selected, s());
@@ -270,7 +270,7 @@ function confirmDelete(callback, label = t('deleteHelp')) {
 function downloadBackup() {
   const blob = new Blob([JSON.stringify(makeBackup(state.data), null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob), a = document.createElement('a');
-  a.href = url; a.download = `sakinah-${state.data.userId}-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  a.href = url; a.download = `yawm-${state.data.userId}-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 async function previewImport(file) {
   try {
@@ -283,7 +283,7 @@ async function previewImport(file) {
 
 const actions = {
   close: closeDialog,
-  'login-language': () => { state.language = state.language === 'ar' ? 'id' : 'ar'; preference('sakinah-language', state.language); renderLogin(); },
+  'login-language': () => { state.language = state.language === 'ar' ? 'id' : 'ar'; preference('yawm-language', state.language); renderLogin(); },
   'add-task': () => taskForm(), 'edit-task': el => taskForm(el.dataset.id),
   transaction: () => transactionForm(), 'edit-transaction': el => transactionForm(el.dataset.id),
   recurring: () => recurringForm(), 'edit-bill': el => recurringForm(el.dataset.id),
@@ -295,7 +295,7 @@ const actions = {
   'auto-contrast': () => { appearanceDraft.colors = { ...appearanceDraft.colors, primary: THEMES[appearanceDraft.theme].primary, surface: THEMES[appearanceDraft.theme].surface, background: THEMES[appearanceDraft.theme].background }; appearanceForm(); },
   language: () => showDialog(t('language'), `${field(t('language'), select('language', ['id', 'ar'], s().language, key => key === 'ar' ? 'العربية' : 'Indonesia'))}${formActions()}`, 'language-form'),
   profile: () => showDialog(t('profile'), `${field(t('displayName'), input('displayName', s().displayName, 'maxlength="80"'))}${formActions()}`, 'profile-form'),
-  logout: async () => { await mutationQueue; preference('sakinah-user', null); state.language = s().language; state.data = null; state.selected = dateKey(); state.screen = 'home'; render(); },
+  logout: async () => { await mutationQueue; preference('yawm-user', null); state.language = s().language; state.data = null; state.selected = dateKey(); state.screen = 'home'; render(); },
   'date-prev': () => navigate(state.screen, addDays(state.selected, -1)), 'date-next': () => navigate(state.screen, addDays(state.selected, 1)), 'date-today': () => navigate(state.screen, today()),
   calendar: () => showCalendar(), 'calendar-month': el => showCalendar(el.dataset.date),
   'calendar-date': async el => { await navigate(['home', 'routines'].includes(state.screen) ? state.screen : 'routines', el.dataset.date); showCalendar(el.dataset.date); },
@@ -382,7 +382,7 @@ document.addEventListener('submit', async event => {
       const data = await loadProfile(user.id); validateBackup(makeBackup(data));
       data.settings.language = state.language;
       const key = dateKey(new Date(), data.settings.timezone); ensureDay(data, key); await saveProfile(data);
-      state.data = data; state.selected = key; state.month = key.slice(0, 7); preference('sakinah-user', user.id); applyAppearance(s()); render();
+      state.data = data; state.selected = key; state.month = key.slice(0, 7); preference('yawm-user', user.id); applyAppearance(s()); render();
     } catch { form.querySelector('.form-error').textContent = t('storageError'); }
     finally { busy = false; } return;
   }
@@ -436,7 +436,7 @@ document.addEventListener('submit', async event => {
     } else if (form.getAttribute('id') === 'reminders-form') {
       update = d => { for (const key of ['enableMondayFastReminder', 'enableThursdayFastReminder', 'enableAyyamulBidhReminder']) d.settings[key] = values.has(key); };
     } else if (form.getAttribute('id') === 'language-form') {
-      update = d => { d.settings.language = v.language; }; state.language = v.language; preference('sakinah-language', v.language);
+      update = d => { d.settings.language = v.language; }; state.language = v.language; preference('yawm-language', v.language);
     } else if (form.getAttribute('id') === 'profile-form') {
       update = d => { d.settings.displayName = v.displayName.trim(); };
     } else if (form.getAttribute('id') === 'appearance-form') {
@@ -487,7 +487,7 @@ setInterval(updateClock, 1000);
 async function boot() {
   try {
     await openDB();
-    const userId = readPreference('sakinah-user');
+    const userId = readPreference('yawm-user');
     if (USERS.some(u => u.id === userId && u.enabled)) {
       const data = await loadProfile(userId); validateBackup(makeBackup(data));
       const key = dateKey(new Date(), data.settings.timezone); ensureDay(data, key); await saveProfile(data);
@@ -496,7 +496,7 @@ async function boot() {
     applyAppearance(s()); render();
   } catch (error) {
     console.error(error);
-    app.innerHTML = `<main class="startup-error"><h1>Sakinah</h1><p>${e(t('storageError'))}</p>${act('reload', t('retry'), '', 'button primary')}</main>`;
+    app.innerHTML = `<main class="startup-error"><h1>Yawm</h1><p>${e(t('storageError'))}</p>${act('reload', t('retry'), '', 'button primary')}</main>`;
     actions.reload = () => location.reload();
   }
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
