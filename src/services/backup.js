@@ -11,6 +11,10 @@ const date = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && v >=
 const bool = v => typeof v === 'boolean';
 const member = (v, choices) => choices.includes(v);
 export function validateSettings(s) {
+  if (object(s)) {
+    const options = { neuVariant: ['soft', 'minimal', 'glass', 'contrast'], neuDepth: [0, 0.5, 1], neuRadius: [0.75, 1, 1.25], neuHeading: [0.9, 1, 1.1], neuWeight: [500, 600, 650] };
+    for (const [key, allowed] of Object.entries(options)) if (s[key] !== undefined && !member(s[key], allowed)) fail();
+  }
   if (!object(s) || !member(s.language, ['id', 'ar']) || !Object.hasOwn(THEMES, s.theme) || !member(s.colorMode, ['light', 'dark', 'system']) || !object(s.colors)) fail();
   for (const [name, value] of Object.entries(s.colors)) if (!member(name, ['primary', 'accent', 'background', 'surface']) || !/^#[0-9a-f]{6}$/i.test(value)) fail();
   if (!member(s.font, ['system', 'humanist', 'serif']) || !member(s.arabicFont, ['sans', 'serif']) || !integer(s.fontScale, 85, 140) || !member(s.lineHeight, [1.4, 1.5, 1.7]) || !member(s.density, ['comfortable', 'compact']) || !bool(s.reducedMotion)) fail();

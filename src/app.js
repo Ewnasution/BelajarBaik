@@ -1,5 +1,6 @@
 import './styles/tokens.css';
 import './styles/app.css';
+import './styles/neumorphism.css';
 import { USERS } from './data/users.js';
 import { THEMES, DEFAULT_SETTINGS, TASK_CATEGORIES, FINANCE_CATEGORIES, PRAYERS, CITIES } from './data/presets.js';
 import { translate, categoryLabel } from './i18n.js';
@@ -221,6 +222,7 @@ function appearanceForm() {
   const v = appearanceDraft, colors = { ...THEMES[v.theme], ...v.colors };
   const desc = { claymorphism: 'clayDesc', neumorphism: 'neuDesc', glassmorphism: 'glassDesc', skeuomorphism: 'skeuDesc' };
   showDialog(t('appearance'), `<fieldset class="theme-fieldset"><legend>${e(t('theme'))}</legend><div class="theme-options">${Object.keys(THEMES).map(theme => `<label class="theme-option ${v.theme === theme ? 'chosen' : ''}"><input type="radio" name="theme" value="${theme}" ${v.theme === theme ? 'checked' : ''}><span class="mini-theme" data-preview-theme="${theme}"><i></i><i></i><i></i></span><strong>${e(t(theme))}</strong><small>${e(t(desc[theme]))}</small></label>`).join('')}</div></fieldset>
+    ${v.theme === 'neumorphism' ? field(t('neuVariant'), select('neuVariant', ['soft', 'minimal', 'glass', 'contrast'], v.neuVariant || 'soft', key => t('neu_' + key))) + field(t('neuDepth'), select('neuDepth', [0, 0.5, 1], v.neuDepth ?? 1, String)) + field(t('neuRadius'), select('neuRadius', [0.75, 1, 1.25], v.neuRadius ?? 1, String)) + field(t('neuHeading'), select('neuHeading', [0.9, 1, 1.1], v.neuHeading ?? 1, String)) + field(t('neuWeight'), select('neuWeight', [500, 600, 650], v.neuWeight ?? 600, String)) : ''}
     ${field(t('colorMode'), select('colorMode', ['light', 'dark', 'system'], v.colorMode))}<fieldset><legend>${e(t('colors'))}</legend><div class="color-options">${['primary', 'accent', 'background', 'surface'].map(c => field(t(c), `<input type="color" name="color-${c}" value="${colors[c]}">`)).join('')}</div><p class="contrast-warning" ${contrast(colors.primary, colors.surface) >= 3 ? 'hidden' : ''}>${e(t('contrastWarning'))}</p>${act('auto-contrast', t('autoContrast'), '', 'button text')}</fieldset>
     <div class="form-grid">${field(t('font'), select('font', ['system', 'humanist', 'serif'], v.font, key => t(key === 'system' ? 'systemFont' : key)))}${field(t('arabicFont'), select('arabicFont', ['sans', 'serif'], v.arabicFont))}</div>${hint(t('fontHelp'))}
     ${field(t('fontSize'), `<div class="range-field"><input type="range" name="fontScale" min="85" max="140" step="5" value="${v.fontScale}"><output id="font-scale-value">${v.fontScale}%</output></div>`)}<div class="form-grid">${field(t('lineHeight'), select('lineHeight', [1.4, 1.5, 1.7], v.lineHeight, n => String(n)))}${field(t('density'), select('density', ['comfortable', 'compact'], v.density))}</div><label class="switch-row"><span>${e(t('reducedMotion'))}</span><input type="checkbox" name="reducedMotion" ${v.reducedMotion ? 'checked' : ''}></label>
@@ -234,6 +236,7 @@ function readAppearance() {
   if (chosen !== appearanceDraft.theme) { appearanceDraft.theme = chosen; appearanceDraft.colors = {}; appearanceForm(); return; }
   for (const key of ['colorMode', 'font', 'arabicFont', 'density']) appearanceDraft[key] = values.get(key);
   for (const key of ['fontScale', 'lineHeight']) appearanceDraft[key] = Number(values.get(key));
+  if (chosen === 'neumorphism') { appearanceDraft.neuVariant = values.get('neuVariant'); for (const key of ['neuDepth', 'neuRadius', 'neuHeading', 'neuWeight']) appearanceDraft[key] = Number(values.get(key)); }
   appearanceDraft.reducedMotion = values.has('reducedMotion');
   appearanceDraft.colors = Object.fromEntries(['primary', 'accent', 'background', 'surface'].map(key => [key, values.get(`color-${key}`)]));
   applyAppearance(appearanceDraft);
@@ -283,7 +286,7 @@ const actions = {
   'quran-plus': () => mutate(d => { updateQuranProgress(d, state.selected, d.days[state.selected].completedPages + 1); }),
   location: locationForm, 'calendar-settings': calendarSettingsForm, reminders: remindersForm,
   appearance: () => { appearanceDraft = structuredClone(s()); appearanceForm(); },
-  'reset-appearance': () => { const language = s().language; for (const key of ['theme', 'colorMode', 'colors', 'font', 'arabicFont', 'fontScale', 'lineHeight', 'density', 'reducedMotion']) appearanceDraft[key] = structuredClone(DEFAULT_SETTINGS[key]); appearanceDraft.language = language; appearanceForm(); },
+  'reset-appearance': () => { if (appearanceDraft.theme === 'neumorphism') { Object.assign(appearanceDraft, { colors: {}, colorMode: 'light', font: 'system', fontScale: 100, lineHeight: 1.5, density: 'comfortable', neuVariant: 'soft', neuDepth: 1, neuRadius: 1, neuHeading: 1, neuWeight: 600 }); appearanceForm(); return; } const language = s().language; for (const key of ['theme', 'colorMode', 'colors', 'font', 'arabicFont', 'fontScale', 'lineHeight', 'density', 'reducedMotion']) appearanceDraft[key] = structuredClone(DEFAULT_SETTINGS[key]); appearanceDraft.language = language; appearanceForm(); },
   'auto-contrast': () => { appearanceDraft.colors = { ...appearanceDraft.colors, primary: THEMES[appearanceDraft.theme].primary, surface: THEMES[appearanceDraft.theme].surface, background: THEMES[appearanceDraft.theme].background }; appearanceForm(); },
   language: () => showDialog(t('language'), `${field(t('language'), select('language', ['id', 'ar'], s().language, key => key === 'ar' ? 'العربية' : 'Indonesia'))}${formActions()}`, 'language-form'),
   profile: () => showDialog(t('profile'), `${field(t('displayName'), input('displayName', s().displayName, 'maxlength="80"'))}${formActions()}`, 'profile-form'),

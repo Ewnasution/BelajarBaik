@@ -1,0 +1,106 @@
+/* Scoped theme: other themes keep their existing visual contract. */
+[data-theme='neumorphism'] {
+  --color-background: var(--color-bg);
+  --color-surface-soft: #f2f5f3;
+  --color-surface-sunken: var(--color-surface-soft);
+  --color-primary-dark: #075e54;
+  --color-primary-soft: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+  --color-text-secondary: #89938f;
+  --color-border: #e8ece9;
+  --control-border: #81948c;
+  --color-success: #21845a;
+  --color-warning: #946019;
+  --color-danger: #b53e3e;
+  --color-info: #397cb5;
+  --focus-ring: var(--color-primary-ink);
+  --radius-xs: calc(8px * var(--neu-radius, 1));
+  --radius-sm: calc(12px * var(--neu-radius, 1));
+  --radius-md: calc(16px * var(--neu-radius, 1));
+  --radius-lg: calc(22px * var(--neu-radius, 1));
+  --radius-xl: calc(28px * var(--neu-radius, 1));
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --font-xs: max(12px, calc(.75rem * var(--font-size-scale)));
+  --font-sm: max(12px, calc(.875rem * var(--font-size-scale)));
+  --font-md: calc(.9375rem * var(--font-size-scale));
+  --font-lg: calc(1.125rem * var(--font-size-scale) * var(--neu-heading, 1));
+  --font-xl: calc(1.375rem * var(--font-size-scale) * var(--neu-heading, 1));
+  --font-2xl: calc(1.875rem * var(--font-size-scale) * var(--neu-heading, 1));
+  --font-display: var(--font-ui);
+  --card-padding: var(--space-6);
+  --shadow-dark: 30 60 50;
+  --shadow-light: 255 255 255;
+  --shadow-soft: 6px 6px 16px rgb(var(--shadow-dark) / calc(.07 * var(--neu-depth, 1))), -6px -6px 16px rgb(var(--shadow-light) / calc(.95 * var(--neu-depth, 1)));
+  --shadow-card: none;
+  --shadow-raised: var(--shadow-soft);
+  --shadow-inset: inset 2px 2px 5px rgb(var(--shadow-dark) / calc(.05 * var(--neu-depth, 1))), inset -2px -2px 5px rgb(var(--shadow-light) / calc(.9 * var(--neu-depth, 1)));
+  --hero-bg: var(--color-surface);
+  --hero-text: var(--color-text);
+  --hero-muted: var(--color-text-muted);
+  --hero-border: var(--color-border);
+  --surface-warm: color-mix(in srgb, var(--color-accent) 9%, var(--color-surface));
+  --accent-text: #91501c;
+  --motion-fast: 180ms;
+}
+[data-theme='neumorphism'][data-density='compact'] { --card-padding: var(--space-4); }
+[data-theme='neumorphism'][data-color-mode='dark'] {
+  --color-surface-soft: #182b24;
+  --color-border: #40574b;
+  --control-border: #819b8e;
+  --shadow-dark: 0 0 0;
+  --shadow-light: 52 76 64;
+  --shadow-soft: 4px 4px 12px rgb(0 0 0 / calc(.16 * var(--neu-depth, 1))), -4px -4px 12px rgb(52 76 64 / calc(.2 * var(--neu-depth, 1)));
+  --shadow-inset: inset 2px 2px 5px rgb(0 0 0 / calc(.15 * var(--neu-depth, 1)));
+  --shadow-card: none;
+  --accent-text: #f5b889;
+  --color-success: #8fd4a5;
+  --color-warning: #e1ba71;
+  --color-danger: #ffada6;
+  --color-info: #92c4ec;
+}
+[data-theme='neumorphism'][data-neu-variant='minimal'],
+[data-theme='neumorphism'][data-neu-variant='contrast'] { --shadow-soft: none; --shadow-inset: none; }
+[data-theme='neumorphism'][data-neu-variant='contrast'] { --color-border: var(--control-border); }
+[data-theme='neumorphism'] :is(h2, h3) { font-weight: var(--neu-weight, 600); }
+[data-theme='neumorphism'] :is(.card, .prayer-card, .day-banner, .fasting-card) { border-radius: var(--radius-lg); }
+[data-theme='neumorphism'] :is(.quran-card, .prayer-card) { box-shadow: var(--shadow-soft); border: 1px solid var(--color-border); }
+[data-theme='neumorphism'] .day-banner { background: var(--color-surface); padding: var(--space-6); }
+[data-theme='neumorphism'] .day-banner::after, [data-theme='neumorphism'] .prayer-card::before { display: none; }
+[data-theme='neumorphism'] :is(.icon-button, .card-icon, .note-icon, .empty-icon) { background: var(--color-surface); border: 1px solid var(--color-border); box-shadow: var(--shadow-soft); border-radius: var(--radius-sm); color: var(--color-primary-ink); }
+[data-theme='neumorphism'] .button { border-radius: var(--radius-sm); font-weight: 500; }
+[data-theme='neumorphism'] :is(.button.secondary, .week-day, .date-summary) { box-shadow: var(--shadow-soft); }
+[data-theme='neumorphism'] .button.primary { box-shadow: var(--shadow-soft); }
+[data-theme='neumorphism'] .button.on-green { background: var(--color-primary); color: var(--color-on-primary); }
+[data-theme='neumorphism'] button:hover:not(:disabled) { filter: none; border-color: var(--control-border); }
+[data-theme='neumorphism'] :is(.button.secondary, .icon-button):hover:not(:disabled) { background: var(--color-surface-sunken); }
+[data-theme='neumorphism'] button:active:not(:disabled) { box-shadow: var(--shadow-inset); opacity: 1; }
+[data-theme='neumorphism'] button:disabled { cursor: not-allowed; }
+[data-theme='neumorphism'] :is(input:not([type='range']):not([type='checkbox']):not([type='radio']), select, textarea) { background: var(--color-surface-sunken); border-color: var(--control-border); box-shadow: var(--shadow-inset); }
+[data-theme='neumorphism'] :is(input, select, textarea):user-invalid { border-color: var(--color-danger); outline: 1px solid var(--color-danger); }
+[data-theme='neumorphism'] input::placeholder, [data-theme='neumorphism'] textarea::placeholder { color: var(--color-text-muted); opacity: 1; }
+[data-theme='neumorphism'] .check-visual { border-color: var(--control-border); border-radius: var(--radius-xs); }
+[data-theme='neumorphism'] .bottom-nav { border-radius: var(--radius-xl); box-shadow: var(--shadow-soft); }
+[data-theme='neumorphism'] .nav-item { border-radius: var(--radius-md); font-size: var(--font-xs); font-weight: 500; }
+[data-theme='neumorphism'] .nav-item.active { background: var(--color-primary-soft); }
+[data-theme='neumorphism'] .nav-item i { background: var(--color-accent); }
+[data-theme='neumorphism'] .prayer-mini .current { background: var(--color-primary-soft); }
+[data-theme='neumorphism'] .quran-card .progress-track > span { background: var(--color-accent); }
+[data-theme='neumorphism'] :is(.task-meta, .calendar-caption, .eyebrow, .page-intro .eyebrow, .prayer-card .eyebrow, .prayer-mini > div, .prayer-mini strong, .location-link, .prayer-disclaimer, .quran-card p, .fasting-card .eyebrow, .fasting-card p, .fasting-card .text-link, .reflection-card .eyebrow, .week-day > small, .week-day > span:first-child, .calendar-activity-count) { font-size: var(--font-xs); letter-spacing: normal; text-transform: none; }
+[data-theme='neumorphism'] .brand small { font-size: 12px; letter-spacing: .04em; }
+[data-theme='neumorphism'] .prayer-mini { gap: var(--space-1); }
+[data-theme='neumorphism'] dialog { border-radius: var(--radius-xl); }
+[data-theme='neumorphism'] dialog::backdrop { background: rgb(30 60 50 / 24%); backdrop-filter: blur(3px); }
+[data-theme='neumorphism'][data-neu-variant='glass'] :is(dialog, .bottom-nav) { background: color-mix(in srgb, var(--color-surface) 94%, transparent); backdrop-filter: blur(12px); }
+[data-theme='neumorphism'] .mini-theme[data-preview-theme='neumorphism'] { background: var(--color-surface); border-color: var(--color-border); box-shadow: var(--shadow-soft); }
+[data-theme='neumorphism'] .mini-theme[data-preview-theme='neumorphism'] i { background: var(--color-primary-soft); }
+[data-theme='neumorphism'] .mini-theme[data-preview-theme='neumorphism'] i:first-child { background: var(--color-primary); }
+@media (max-width: 650px) {
+  [data-theme='neumorphism'] .day-banner { padding: var(--space-4); }
+  [data-theme='neumorphism'] .week-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
+  [data-theme='neumorphism'] .week-day { min-height: 100px; }
+  [data-theme='neumorphism'] .prayer-mini { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  [data-theme='neumorphism'] .nav-item { padding-inline: 2px; overflow-wrap: anywhere; }
+}
+@media (prefers-reduced-motion: reduce) { [data-theme='neumorphism'] { --motion-fast: 0ms; --motion-normal: 0ms; scroll-behavior: auto; } }
+[data-theme='neumorphism'][data-motion='reduced'] { --motion-fast: 0ms; --motion-normal: 0ms; scroll-behavior: auto; }

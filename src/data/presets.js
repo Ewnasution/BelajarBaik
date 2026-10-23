@@ -1,6 +1,6 @@
 export const THEMES = {
   claymorphism: { primary: '#26765d', accent: '#c39851', background: '#f4f5ef', surface: '#ffffff' },
-  neumorphism: { primary: '#276b55', accent: '#bd9346', background: '#e8ece7', surface: '#e8ece7' },
+  neumorphism: { primary: '#087f70', accent: '#f28b45', background: '#f7f8f7', surface: '#ffffff' },
   glassmorphism: { primary: '#216c56', accent: '#bc934b', background: '#edf3ef', surface: '#f8fcfa' },
   skeuomorphism: { primary: '#23664f', accent: '#b4893e', background: '#f0eee7', surface: '#fbfaf6' },
 };

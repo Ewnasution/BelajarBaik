@@ -10,6 +10,12 @@ export function contrast(a, b) {
 export const readable = bg => contrast(bg, '#20352b') >= 4.5 ? '#20352b' : contrast(bg, '#ffffff') >= 4.5 ? '#ffffff' : '#000000';
 export function applyAppearance(settings) {
   const root = document.documentElement;
+  const neu = settings.theme === 'neumorphism';
+  root.dataset.neuVariant = ['soft', 'minimal', 'glass', 'contrast'].includes(settings.neuVariant) ? settings.neuVariant : 'soft';
+  for (const [key, allowed, fallback, token] of [
+    ['neuDepth', [0, .5, 1], 1, 'depth'], ['neuRadius', [.75, 1, 1.25], 1, 'radius'],
+    ['neuHeading', [.9, 1, 1.1], 1, 'heading'], ['neuWeight', [500, 600, 650], 600, 'weight']
+  ]) root.style.setProperty('--neu-' + token, allowed.includes(settings[key]) ? settings[key] : fallback);
   root.dataset.theme = settings.theme;
   const dark = settings.colorMode === 'dark' || (settings.colorMode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   root.dataset.colorMode = dark ? 'dark' : 'light';
@@ -29,5 +35,12 @@ export function applyAppearance(settings) {
   root.style.setProperty('--line-height', settings.lineHeight);
   root.style.setProperty('--font-ui', settings.language === 'ar' ? 'var(--font-arabic)' : settings.font === 'serif' ? 'Georgia, Cambria, serif' : settings.font === 'humanist' ? 'Verdana, sans-serif' : '"Segoe UI", system-ui, sans-serif');
   root.style.setProperty('--font-arabic', settings.arabicFont === 'serif' ? '"Traditional Arabic", "Times New Roman", serif' : 'Tahoma, Arial, sans-serif');
+  if (neu) {
+    const ink = contrast('#263936', colors.surface) >= 4.5 ? '#263936' : readable(colors.surface);
+    root.style.setProperty('--color-text', ink);
+    root.style.setProperty('--color-text-muted', contrast('#62716b', colors.surface) >= 4.5 ? '#62716b' : ink);
+    if (settings.font === 'system' && settings.language !== 'ar') root.style.setProperty('--font-ui', 'Inter, "Plus Jakarta Sans", system-ui, -apple-system, sans-serif');
+    if (root.dataset.neuVariant === 'contrast') root.style.setProperty('--color-text-muted', ink);
+  }
   document.querySelector('meta[name="theme-color"]').content = colors.primary;
 }
