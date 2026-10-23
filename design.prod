@@ -1,0 +1,982 @@
+# DESIGN SPECIFICATION — MUSLIM DAILY PLANNER
+
+> **Dokumen:** `design.prod`  
+> **Produk:** Muslim Daily Planner  
+> **Versi:** 1.0  
+> **Jenis:** Design system, UI/UX specification, visual behavior, dan implementasi tema  
+> **Referensi produk:** `prod.md`  
+> **Platform:** Offline-first Progressive Web App (PWA), mobile-first  
+> **Bahasa:** Bahasa Indonesia dan العربية (RTL)
+
+---
+
+## 1. Tujuan Desain
+
+Membangun antarmuka perencana harian seorang Muslim yang terasa tenang, hangat, modern, mudah digunakan dengan satu tangan, dan tidak membuat pengguna merasa dihakimi saat ada rutinitas yang belum selesai. UI harus bekerja konsisten saat offline, mendukung tanggal Hijriah sebagai informasi utama, serta menyatukan ibadah, kebiasaan, catatan, dan keuangan tanpa terasa sesak.
+
+Desain harus mendukung personalisasi visual yang nyata. Pengguna dapat mengganti gaya tema, warna, jenis font, ukuran font, dan kepadatan tampilan melalui Pengaturan. Semua preferensi disimpan secara lokal dan tetap berlaku setelah aplikasi ditutup, dibuka kembali, atau digunakan tanpa internet.
+
+### Prinsip desain
+
+1. **Ibadah sebagai fokus:** checklist ibadah dan waktu salat mudah ditemukan tanpa ornamen yang mengganggu.
+2. **Tenang dan tidak menghakimi:** gunakan bahasa suportif, indikator progres netral, dan hindari warna merah untuk rutinitas yang belum selesai.
+3. **Personalisasi tanpa kehilangan keterbacaan:** kebebasan mengubah warna/font tetap mengikuti pemeriksaan kontras dan batas ukuran yang masuk akal.
+4. **Offline-first secara visual dan teknis:** font, ikon, aset, tema, dan ilustrasi inti harus tersedia secara lokal.
+5. **Mobile-first:** aksi utama dapat dijangkau dengan satu tangan; bottom navigation selalu jelas dan tidak menutupi konten.
+6. **Aksesibel:** status tidak dibedakan berdasarkan warna saja; fokus keyboard, ukuran teks, reduced motion, dan RTL ditangani secara konsisten.
+
+---
+
+## 2. Arah Visual dan Identitas
+
+### Mood visual
+
+- Teduh, bersih, membumi, tertata, profesional, dan ramah.
+- Identitas Islami dihadirkan secara halus melalui warna, tanggal Hijriah, pola geometris tipis bila diperlukan, dan tipografi Arab yang tepat.
+- Hindari ornamen bulan-bintang, motif masjid, atau pola dekoratif besar yang digunakan berlebihan.
+- Prioritaskan informasi dan tindakan daripada dekorasi.
+
+### Komposisi umum
+
+- Latar halaman menggunakan warna dasar tema.
+- Konten utama berada di dalam kolom yang nyaman dibaca; pada ponsel umumnya padding 16–20 px.
+- Gunakan kartu untuk kelompok informasi yang memang berkaitan, bukan setiap elemen kecil.
+- Radius sudut konsisten dengan tema aktif.
+- Elevasi, bayangan, blur, border, dan highlight harus berasal dari token tema—jangan hard-code per komponen.
+- Ikon menggunakan satu keluarga ikon yang konsisten dan dibundel lokal. Ikon dekoratif tidak boleh menggantikan label teks pada bottom navigation.
+
+---
+
+## 3. Struktur Navigasi
+
+### Bottom navigation utama
+
+Lima tujuan utama:
+
+1. **Beranda / الرئيسية** — ringkasan hari, tanggal Hijriah, waktu salat, checklist singkat, dan target Al-Qur'an.
+2. **Rutinitas / الروتين** — semua rutinitas ibadah dan tugas tambahan.
+3. **Keuangan / المالية** — saldo, pemasukan, pengeluaran, dan anggaran.
+4. **Analitik / التحليلات** — kebiasaan dan ringkasan keuangan.
+5. **Pengaturan / الإعدادات** — tema, warna, font, bahasa, lokasi, kalender, dan cadangan.
+
+### Aturan bottom navigation
+
+- Tetap di bawah viewport dengan mempertimbangkan `safe-area-inset-bottom`.
+- Tinggi area navigasi target 64–76 px ditambah safe area perangkat bila dibutuhkan.
+- Setiap item memakai ikon dan label; label jangan dihilangkan pada tampilan standar ponsel.
+- Status terpilih ditampilkan melalui kombinasi warna, bentuk/indikator, dan `aria-current`, bukan warna saja.
+- Isi halaman memiliki padding bawah yang cukup agar elemen terakhir tidak tertutup bottom navigation.
+- Pada RTL, urutan visual mengikuti keputusan navigasi yang konsisten. Label dan tata letak mengikuti bahasa; jangan membalik urutan secara parsial.
+- Modal formulir dapat membuka keyboard tanpa membuat tombol simpan tertutup. Bila ruang sempit, gunakan layar penuh.
+
+### Navigasi sekunder
+
+Gunakan header layar dengan judul, tanggal/periode bila relevan, dan paling banyak satu aksi utama di kanan/kiri sesuai arah bahasa. Jangan menambahkan tab sekunder terlalu banyak dalam satu layar ponsel.
+
+---
+
+## 4. Sistem Tema
+
+### 4.1 Tema bawaan
+
+Sediakan empat tema tampilan utama yang dapat dipilih melalui Pengaturan > Tampilan:
+
+1. **Claymorphism** — hangat, lembut, berlapis seperti tanah liat; tema bawaan awal yang direkomendasikan.
+2. **Neumorphism** — minimal, permukaan seolah timbul/cekung dari latar yang sama.
+3. **Glassmorphism** — ringan, transparan, berlapis seperti kaca dengan blur terbatas.
+4. **Skeuomorphism** — permukaan dan kontrol memiliki affordance yang terlihat seperti benda fisik, dengan detail tekstur tipis.
+
+Pengguna boleh mengubah warna dasar di dalam tema yang dipilih. Gaya khas tema harus tetap terlihat setelah warna dikustomisasi: Claymorphism mempertahankan volume dan bentuk lembut; Neumorphism mempertahankan emboss/deboss; Glassmorphism mempertahankan lapisan translucent; Skeuomorphism mempertahankan highlight dan kedalaman material.
+
+### 4.2 Pilihan tampilan umum
+
+Di Pengaturan > Tampilan, tampilkan bagian berikut:
+
+- **Gaya tema:** empat kartu preview dengan nama, contoh kartu, tombol, dan checklist.
+- **Mode warna:** Terang, Gelap, atau Ikuti sistem.
+- **Warna:** warna primer, aksen sekunder, latar, dan permukaan/kartu. Sediakan palet pilihan dan color picker bila didukung browser.
+- **Tipografi:** keluarga font Latin, keluarga font Arab, ukuran font, dan tinggi baris.
+- **Kerapatan tampilan:** Nyaman atau Ringkas.
+- **Gerakan:** Normal atau Kurangi animasi.
+- **Pratinjau:** tampilkan contoh tanggal Hijriah, checklist, tombol, kartu waktu salat, dan transaksi sebelum menyimpan.
+- **Reset tema:** mengembalikan setelan tema aktif ke nilai bawaan.
+
+Perubahan tampil langsung di pratinjau. Tombol **Terapkan** menyimpan semua perubahan; tombol **Batalkan** memulihkan nilai sebelum sesi pengeditan. Jika desain menerapkan perubahan secara langsung, tampilkan tombol **Urungkan** agar perilaku tetap mudah dipahami.
+
+### 4.3 Token desain wajib
+
+Semua warna dan gaya komponen harus menggunakan token CSS. Jangan menulis warna langsung di komponen kecuali untuk status yang juga ditokenkan.
+
+Token minimum:
+
+```css
+:root {
+  /* Warna */
+  --color-bg: #f6f7f3;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #edf0e9;
+  --color-text: #1d2924;
+  --color-text-muted: #66736c;
+  --color-border: #dce3dc;
+  --color-primary: #26765d;
+  --color-on-primary: #ffffff;
+  --color-accent: #d4a95e;
+  --color-success: #28784f;
+  --color-warning: #946318;
+  --color-danger: #b33b3b;
+  --color-info: #356d9a;
+  --focus-ring: #1e6bd6;
+
+  /* Tipografi */
+  --font-ui: system-ui, sans-serif;
+  --font-arabic: "Noto Sans Arabic", sans-serif;
+  --font-size-scale: 1;
+  --font-xs: calc(0.75rem * var(--font-size-scale));
+  --font-sm: calc(0.875rem * var(--font-size-scale));
+  --font-md: calc(1rem * var(--font-size-scale));
+  --font-lg: calc(1.125rem * var(--font-size-scale));
+  --font-xl: calc(1.375rem * var(--font-size-scale));
+  --font-2xl: calc(1.75rem * var(--font-size-scale));
+  --line-height: 1.5;
+
+  /* Bentuk dan jarak */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Elevasi dan gerak */
+  --shadow-card: 0 4px 14px rgb(30 45 36 / 8%);
+  --shadow-raised: 0 8px 22px rgb(30 45 36 / 12%);
+  --shadow-inset: inset 0 1px 3px rgb(30 45 36 / 8%);
+  --border-width: 1px;
+  --blur-surface: 0px;
+  --motion-fast: 140ms;
+  --motion-normal: 220ms;
+}
+```
+
+Nilai di atas merupakan fallback desain, bukan nilai wajib untuk semua tema. Setiap tema boleh mendefinisikan token yang berbeda, tetapi nama token dan hubungan antar komponen harus sama.
+
+### 4.4 Aturan kustomisasi warna
+
+- Sediakan warna bawaan yang seimbang untuk setiap tema.
+- Warna utama yang dapat disesuaikan: **primer**, **aksen**, **latar**, dan **permukaan**.
+- Warna status selesai, peringatan, bahaya, informasi, teks, dan fokus sebaiknya tetap dikendalikan sistem demi aksesibilitas. Pengguna lanjutan dapat memilih preset status, tetapi sistem wajib mengevaluasi kontras.
+- Saat warna latar/permukaan berubah, hitung warna teks yang paling terbaca atau pilih otomatis antara teks gelap dan putih.
+- Tampilkan peringatan bila kontras teks terhadap latar tidak mencukupi. Jangan diam-diam menerapkan kombinasi yang tidak terbaca.
+- Sediakan pilihan **Pulihkan kontras otomatis** sebagai tindakan cepat.
+- Jangan menyimpan hanya nama warna; simpan nilai warna final agar tema khusus dapat dipulihkan dengan tepat.
+- Hindari gradien yang terlalu ramai. Untuk mode gelap, turunkan kecerahan permukaan dan bayangan; jangan sekadar membalik seluruh warna.
+
+### 4.5 Kustomisasi ukuran dan jenis font
+
+Pengguna dapat menyesuaikan:
+
+- **Ukuran font UI:** 85%, 90%, 100%, 110%, 120%, 130%, dan 140% dari skala dasar.
+- **Font UI Latin:** System Default, Inter, Plus Jakarta Sans, atau Atkinson Hyperlegible bila font telah dibundel lokal dan lisensinya sesuai.
+- **Font Arab:** Noto Sans Arabic, IBM Plex Sans Arabic, atau Amiri untuk tampilan teks Arab yang lebih tradisional. Semua font yang dipilih harus tersedia offline.
+- **Tinggi baris:** Ringkas (1.4), Normal (1.5), atau Longgar (1.7).
+- **Ketebalan font:** Normal atau lebih tegas, bila keluarga font mendukung bobot tersebut.
+
+Rekomendasi bawaan: font UI yang netral dan sangat terbaca, font Arab Noto Sans Arabic untuk UI, dan Amiri hanya sebagai opsi tampilan teks Arab yang lebih literer. Jangan gunakan font dekoratif untuk nominal keuangan, tombol kecil, atau metadata.
+
+Gunakan token font agar seluruh aplikasi berubah konsisten. Jangan mengubah ukuran font dengan mengganti ukuran setiap komponen secara individual. Batasi teks metadata kecil; tanggal Masehi boleh lebih kecil daripada Hijriah, tetapi tetap terbaca dan tidak boleh turun di bawah ukuran aksesibel untuk informasi penting.
+
+### 4.6 Penyimpanan preferensi tema
+
+Preferensi tampilan disimpan pada data setting lokal per profil pengguna, misalnya:
+
+```json
+{
+  "themeId": "claymorphism",
+  "colorMode": "light",
+  "customColors": {
+    "primary": "#26765D",
+    "accent": "#D4A95E",
+    "background": "#F6F7F3",
+    "surface": "#FFFFFF"
+  },
+  "fontUi": "system",
+  "fontArabic": "noto-sans-arabic",
+  "fontScale": 1,
+  "lineHeight": 1.5,
+  "density": "comfortable",
+  "reducedMotion": false,
+  "contrastAssist": true
+}
+```
+
+Gunakan validasi nilai sebelum menyimpan. Bila preferensi rusak atau tidak dikenal setelah pembaruan aplikasi, kembali ke tema Claymorphism dan tampilkan aplikasi secara normal. Jangan membuat halaman gagal dimuat hanya karena data preferensi invalid.
+
+---
+
+## 5. Spesifikasi Empat Tema Utama
+
+## 5.1 Claymorphism — tema bawaan
+
+### Karakter visual
+
+- Permukaan lembut, sudut membulat, volume ringan, dan bayangan diffuse.
+- Bentuk terasa seperti objek clay/matte, tetapi tetap rapi dan tidak menyerupai mainan anak-anak.
+- Gunakan latar krem-hijau sangat muda, kartu sedikit lebih terang, dan aksen emerald/sage.
+- Bayangan berlapis boleh dipakai pada kartu utama dan tombol aksi, bukan pada seluruh elemen sekaligus.
+- Border tipis digunakan sebagai pemisah bila bayangan kurang cukup.
+
+### Palet rekomendasi
+
+| Token | Nilai awal | Tujuan |
+|---|---|---|
+| Background | `#F3F5EF` | Latar hangat dan segar |
+| Surface | `#FFFFFF` | Kartu utama |
+| Surface sunken | `#E8EDE5` | Area input dan panel tertanam |
+| Primary | `#26765D` | CTA dan navigasi aktif |
+| On primary | `#FFFFFF` | Teks pada tombol utama |
+| Accent | `#D4A95E` | Penanda penting, bukan untuk teks kecil tanpa uji kontras |
+| Text | `#203029` | Teks utama |
+| Muted text | `#68756D` | Metadata |
+| Border | `#DDE4DA` | Garis pemisah lembut |
+
+### Elevasi dan bentuk
+
+- Kartu utama: radius 22 px; `--shadow-card` ditingkatkan sedikit dengan bayangan lebar dan halus.
+- Tombol utama: radius 14–18 px; memiliki highlight tipis di tepi atas dan bayangan kecil di bawah.
+- Input: latar sunken dengan border tipis; fokus tetap terlihat jelas.
+- Checklist: kontrol centang tegas, tidak menggunakan bayangan berlebihan.
+- Kartu Hijriah dan kartu waktu salat boleh memiliki aksen dekoratif abstrak tipis di sudut, namun tidak boleh mengganggu tanggal atau waktu.
+
+### Contoh penggunaan
+
+- Header tanggal: kartu besar dengan tanggal Hijriah, tanggal Masehi kecil, dan status hari.
+- Kartu waktu salat berikutnya: elevated card, satu aksen emerald, angka waktu besar.
+- Kartu progres Al-Qur'an: progress bar jelas dan tombol tambah halaman.
+- CTA tambah transaksi: tombol timbul dengan warna primer solid.
+
+### Jangan lakukan
+
+- Hindari bayangan tebal berwarna hitam.
+- Jangan membuat setiap chip, ikon, dan teks tampak seperti gumpalan 3D.
+- Jangan menggunakan radius ekstrem pada seluruh elemen jika menurunkan kepadatan informasi.
+
+## 5.2 Neumorphism
+
+### Karakter visual
+
+- Latar dan permukaan sangat dekat warnanya; kedalaman dibuat lewat pasangan highlight dan shadow.
+- Kontrol dapat tampak timbul saat belum aktif dan cekung saat dipilih/tertekan.
+- Kesan minimal dan tenang, tetapi harus ditambah penanda fokus/terpilih yang jelas.
+- Jangan memakai bayangan saja untuk menandai keadaan; gunakan label, border/focus ring, dan perubahan bentuk.
+
+### Palet rekomendasi
+
+| Token | Nilai awal | Tujuan |
+|---|---|---|
+| Background | `#E8ECE7` | Latar neutral sage |
+| Surface | `#E8ECE7` | Permukaan menyatu dengan latar |
+| Surface sunken | `#DEE4DD` | Input atau track tertanam |
+| Primary | `#276B55` | CTA dan elemen terpilih |
+| On primary | `#FFFFFF` | Teks CTA |
+| Accent | `#C59A4A` | Aksen hangat |
+| Text | `#24312A` | Teks utama |
+| Muted text | `#5B6A60` | Metadata |
+| Border | `#C9D2C9` | Outline yang diperlukan |
+
+### Elevasi dan bentuk
+
+- Kartu: dua bayangan lembut, satu terang dari kiri-atas dan satu gelap dari kanan-bawah.
+- Tombol: timbul secara default; saat ditekan bayangan beralih ke inset atau kedalaman berkurang.
+- Input: inset dengan outline/focus ring ketika fokus.
+- Checklist: keadaan aktif menggunakan centang, warna primer, dan indikator bentuk; jangan hanya membuat cekungan.
+- Bottom navigation: menyatu dengan latar, tab aktif mendapat chip timbul atau inset dengan ikon dan label yang jelas.
+
+### Aturan aksesibilitas khusus
+
+Neumorphism rentan memiliki kontras batas yang rendah. Tambahkan outline yang tampak saat hover/fokus, pastikan teks memakai nilai warna kontras tinggi, dan jangan gunakan bayangan sebagai satu-satunya batas input. Pada mode kontras tinggi, kurangi atau hilangkan efek neumorphic dan tampilkan border yang jelas.
+
+## 5.3 Glassmorphism
+
+### Karakter visual
+
+- Kartu translucent, lapisan permukaan, border tipis putih/terang, dan blur latar yang lembut.
+- Latar boleh berupa gradien statis lokal yang sangat lembut, misalnya sage ke krem, tanpa animasi dekoratif terus-menerus.
+- Blur menjadi ornamen pendukung, bukan syarat untuk mengenali kartu atau membedakan teks.
+- Isi tetap memiliki kontras tinggi, termasuk pada mode gelap.
+
+### Palet rekomendasi
+
+| Token | Nilai awal | Tujuan |
+|---|---|---|
+| Background | `#EEF3F0` | Latar dasar |
+| Surface | `rgb(255 255 255 / 76%)` | Kartu translucent |
+| Surface sunken | `rgb(228 237 231 / 84%)` | Field/input |
+| Primary | `#216C56` | CTA |
+| On primary | `#FFFFFF` | Teks CTA |
+| Accent | `#D1A75F` | Aksen |
+| Text | `#1E2C25` | Teks utama |
+| Muted text | `#5F6F66` | Metadata |
+| Border | `rgb(255 255 255 / 82%)` | Tepi kaca |
+
+### Elevasi dan bentuk
+
+- Kartu: latar semi-transparan, border 1 px, blur 12–20 px jika didukung dan performa memadai.
+- CTA: solid, bukan translucent, agar mudah dikenali.
+- Bottom navigation: panel kaca dengan latar yang cukup solid sehingga item navigasi terbaca.
+- Modal: lapisan solid/translucent yang hampir opak untuk menjaga keterbacaan form.
+- Latar gradien statis tidak boleh mengambil perhatian dari teks atau menghabiskan baterai melalui animasi.
+
+### Fallback dan aksesibilitas khusus
+
+- Gunakan `@supports (backdrop-filter: blur(1px))` untuk efek blur. Jika tidak didukung, tampilkan surface dengan opasitas tinggi dan border.
+- Hormati `prefers-reduced-transparency` jika dapat dideteksi dan preferensi internal **Kurangi efek visual**.
+- Jangan menaruh teks kecil di atas latar yang ramai atau berubah-ubah.
+- Pastikan semua komponen tetap terbaca saat screenshot, print, atau browser tidak mendukung blur.
+
+## 5.4 Skeuomorphism
+
+### Karakter visual
+
+- Komponen memiliki affordance visual yang familiar: tombol tampak dapat ditekan, track memiliki kedalaman, kartu dapat terasa seperti panel fisik.
+- Detail material boleh berupa highlight, bevel, garis tepi ganda, atau tekstur sangat halus yang dibuat dengan CSS atau aset lokal.
+- Tetap modern dan ringan. Jangan meniru material foto-realistis yang berat.
+
+### Palet rekomendasi
+
+| Token | Nilai awal | Tujuan |
+|---|---|---|
+| Background | `#F0EEE7` | Krem netral |
+| Surface | `#FBFAF6` | Panel utama |
+| Surface sunken | `#E5E1D7` | Field atau kontrol cekung |
+| Primary | `#23664F` | Tombol utama |
+| On primary | `#FFFFFF` | Teks tombol utama |
+| Accent | `#C49A4B` | Aksen hangat |
+| Text | `#2B302B` | Teks utama |
+| Muted text | `#62685F` | Metadata |
+| Border | `#D1CDC2` | Batas panel |
+
+### Elevasi dan bentuk
+
+- Tombol utama: gradien vertikal yang sangat halus, highlight di tepi atas, bayangan bawah, serta state pressed yang mengurangi elevasi.
+- Kartu: border tegas halus, highlight bagian atas, shadow bawah yang konservatif.
+- Input: inset panel dengan label permanen; jangan gunakan efek cekung yang membuat field terlihat nonaktif.
+- Checklist: checkbox mudah dikenali, dengan bentuk dan status yang konsisten dengan kontrol sistem.
+- Slider pengaturan ukuran font: track dan thumb tampak interaktif, tetapi tetap mengikuti standar aksesibilitas.
+
+### Jangan lakukan
+
+- Jangan memakai tekstur berat, noise yang jelas, bevel berlebihan, atau efek metal/gel glossy yang mengganggu.
+- Hindari skeuomorphism yang membuat aplikasi terasa seperti dashboard lama.
+- Jangan membuat tombol disabled tampak seolah dapat ditekan.
+
+---
+
+## 6. Mode Terang, Gelap, dan Ikuti Sistem
+
+Setiap gaya tema harus menyediakan tiga mode:
+
+- **Terang:** menggunakan palet utama tema.
+- **Gelap:** latar gelap kehijauan/abu, surface bertingkat, teks terang, dan aksen dengan kecerahan yang cukup. Untuk Glassmorphism, tingkatkan opasitas kartu. Untuk Neumorphism, sederhanakan bayangan agar komponen tidak hilang. Untuk Skeuomorphism, kurangi highlight yang terlalu menyilaukan.
+- **Ikuti sistem:** membaca `prefers-color-scheme` dan menyesuaikan otomatis.
+
+Preferensi mode warna terpisah dari pilihan gaya tema. Ketika pengguna memilih gaya tema baru, jangan mereset pilihan mode warna atau ukuran font.
+
+---
+
+## 7. Grid, Ukuran, dan Responsif
+
+### Breakpoint acuan
+
+- **Small mobile:** 320–359 px; mode ringkas, padding 12–16 px, tombol tetap dapat disentuh.
+- **Mobile:** 360–599 px; desain utama.
+- **Tablet:** 600–899 px; gunakan 2 kolom hanya bila isi memang lebih mudah dipahami.
+- **Desktop:** 900 px ke atas; konten maksimal sekitar 1120 px, pusatkan layout, pertahankan bottom navigation atau pindahkan ke navigasi samping hanya bila keputusan produk disetujui secara konsisten. Pada versi awal, lebih baik mempertahankan pola navigasi yang sama.
+
+### Spacing dan target sentuh
+
+- Padding halaman mobile: 16 px (dapat menjadi 12 px pada mode ringkas).
+- Jarak antar kartu: 12–16 px.
+- Padding dalam kartu: 16 px; kartu utama dapat menggunakan 20 px.
+- Target area sentuh ideal: minimal 44 × 44 px.
+- Jangan menempatkan dua kontrol destruktif/aksi berbeda terlalu berdekatan.
+- Beri ruang bawah ekstra untuk bottom nav dan safe area.
+
+### Kepadatan tampilan
+
+**Nyaman (default):** ruang longgar untuk pemakaian harian, jarak kartu lebih besar, teks normal.  
+**Ringkas:** mengurangi padding dan jarak antar item secara terbatas, tanpa mengurangi area sentuh, ukuran font dasar, atau kontras.
+
+---
+
+## 8. Spesifikasi Layar
+
+## 8.1 Login / Pilih Profil
+
+### Tujuan
+
+Mengenali profil lokal sebelum data rutin dan keuangan ditampilkan.
+
+### Struktur
+
+1. Logo/ikon sederhana dan nama aplikasi.
+2. Salam singkat yang tenang.
+3. Kartu pilihan profil dari data lokal.
+4. PIN lokal hanya jika fitur ini diaktifkan.
+5. Tombol **Masuk**.
+6. Catatan ringkas: profil dan data tersimpan pada perangkat ini.
+
+### Perilaku
+
+- Tidak memerlukan internet setelah app shell terpasang.
+- Tampilkan status validasi di dekat field.
+- Jangan menampilkan kata sandi/PIN dalam source UI sebagai teks helper.
+- Jika akun/profil hanya ada di `users.js`, jelaskan dalam dokumentasi bahwa ini identitas lokal, bukan autentikasi aman.
+- UI login harus tetap berfungsi dengan bahasa Indonesia maupun Arab dan mendukung RTL.
+
+## 8.2 Beranda
+
+### Hierarki konten
+
+1. Header ringkas: sapaan, avatar/inisial atau menu profil, indikator offline yang kecil.
+2. **Kartu tanggal:** tanggal Hijriah paling menonjol, tanggal Masehi lebih kecil tepat di bawahnya, nama hari, serta tombol membuka kalender.
+3. **Kartu waktu salat berikutnya:** nama salat, countdown/waktu, lokasi/metode yang digunakan, dan akses ke jadwal lengkap.
+4. **Progres ibadah hari ini:** misalnya “4 dari 7 rutinitas selesai” dan indikator visual.
+5. Checklist cepat: salat fardu, dzikir, Duha, Al-Qur'an; tampilkan hanya tugas inti dan link “Lihat semua rutinitas”.
+6. Kartu target Al-Qur'an: target halaman, halaman selesai, sisa target, tombol tambah progres.
+7. Kartu puasa sunnah bila relevan: nama puasa, tanggal perkiraan, dan penjelasan singkat.
+8. Ringkasan keuangan bulan ini: pemasukan, pengeluaran, dan saldo/perubahan periode sesuai definisi data; tautan ke Keuangan.
+9. Catatan hari ini atau prompt lembut untuk menulis refleksi.
+
+### Aturan visual
+
+- Jangan membuat semua kartu memiliki ukuran dan bobot visual sama. Tanggal dan waktu salat menjadi prioritas utama.
+- Cukup tampilkan satu CTA yang dominan pada satu area.
+- Checklist bisa dicentang langsung dari beranda.
+- Jika lokasi belum tersedia, kartu salat menawarkan **Atur lokasi** dan opsi input manual; jangan mengasumsikan izin lokasi telah diberikan.
+- Jika tidak ada transaksi pada bulan ini, gunakan empty state informatif dengan tombol **Tambah transaksi**, bukan angka nol yang tampak seperti kesalahan.
+- Saat offline, tampilkan informasi tersimpan dan tandai bila data seperti waktu salat perlu dihitung ulang atau lokasinya belum ditentukan.
+
+## 8.3 Rutinitas
+
+### Struktur
+
+- Header: “Rutinitas” dan pemilih tanggal.
+- Segmen/tab kategori: **Ibadah**, **Islami**, **Kesehatan**, **Produktivitas**, **Olahraga**. Jangan memadati layar dengan chip yang memerlukan gulir horizontal panjang; pada ponsel gunakan filter dropdown atau tab yang dapat digeser.
+- Ringkasan progres untuk tanggal terpilih.
+- Daftar tugas terurut berdasarkan waktu atau urutan prioritas yang dipilih pengguna.
+- Tombol **Tambah tugas** yang selalu mudah dijangkau.
+
+### Baris tugas
+
+Setiap baris harus dapat menampilkan:
+
+- Checkbox berukuran cukup.
+- Nama tugas.
+- Waktu/jadwal bila ada.
+- Kategori atau label pengulangan bila relevan.
+- Progress tambahan bila diperlukan, misalnya halaman Al-Qur'an.
+- Menu detail/edit yang tidak mendominasi.
+
+### Status
+
+- Belum selesai: teks normal, checkbox kosong.
+- Selesai: centang terlihat, teks boleh sedikit redup tetapi tidak hilang/terlalu rendah kontrasnya.
+- Terlewat: hanya diberi label bila memang diperlukan; jangan menggunakan merah besar sebagai hukuman.
+- Tidak dijadwalkan pada hari ini: jangan menghitung sebagai tugas yang belum selesai.
+
+### Form tugas tambahan
+
+Field: nama tugas, kategori, tanggal mulai, pengulangan, waktu opsional, pengingat lokal opsional, catatan, dan warna/icon kategori opsional. Validasi nama wajib dan aturan pengulangan yang jelas. Pengguna dapat mengubah atau menghapus tugas melalui menu tindakan dengan dialog konfirmasi untuk penghapusan.
+
+## 8.4 Kalender Hijriah dan Puasa Sunnah
+
+### Struktur
+
+- Header bulan Hijriah dan tahun.
+- Tanggal Hijriah sebagai angka utama tiap sel; tanggal Masehi tampil kecil.
+- Tombol berpindah bulan dan kembali ke hari ini.
+- Penanda puasa Senin-Kamis dan Ayyamul Bidh dengan simbol/label yang bisa dibaca, bukan warna saja.
+- Panel detail untuk tanggal yang dipilih: tanggal Hijriah, tanggal Masehi, catatan puasa, dan rutinitas pada tanggal tersebut.
+
+### Aturan
+
+- Tampilkan catatan bahwa tanggal Hijriah adalah estimasi berdasarkan metode kalender pilihan dan dapat berbeda dari pengumuman resmi setempat.
+- Ayyamul Bidh dihitung pada tanggal Hijriah 13, 14, dan 15 sesuai kalibrasi kalender aktif.
+- Senin-Kamis dihitung berdasarkan hari dalam kalender Masehi lokal.
+- Penyesuaian Hijriah harus terhubung dengan tampilan kalender dan indikator Ayyamul Bidh secara konsisten.
+
+## 8.5 Keuangan
+
+### Ringkasan halaman
+
+1. Periode yang dipilih (bulan ini secara default).
+2. Kartu ringkasan: total pemasukan, total pengeluaran, dan saldo bersih periode.
+3. Kartu proyeksi pengeluaran bulanan dengan label “perkiraan” dan penjelasan singkat metode perhitungan.
+4. Pemisahan daftar **Pemasukan**, **Pengeluaran tetap**, dan **Pengeluaran manual**.
+5. Daftar transaksi terbaru.
+6. Tombol tambah transaksi yang jelas; pilihan jenis transaksi muncul dalam form atau menu aksi.
+
+### Form transaksi
+
+- Jenis: Pemasukan, Pengeluaran tetap, Pengeluaran manual.
+- Nominal dengan keypad numerik dan format mata uang yang konsisten.
+- Kategori, tanggal, sumber/tujuan opsional, catatan, dan metode pengulangan untuk pengeluaran tetap.
+- Pengeluaran tetap: nilai, jadwal pengulangan, tanggal mulai, dan tanggal berhenti opsional.
+- Preview efek transaksi pada ringkasan periode.
+- Tombol **Simpan** dan **Batal** yang jelas.
+
+### Visualisasi keuangan
+
+- Grafik harus ringkas, memiliki label dan nilai yang dapat dibaca, dan tidak mengandalkan warna saja.
+- Sediakan ringkasan angka sebagai alternatif grafik.
+- Proyeksi perlu menampilkan asumsi (misalnya berdasarkan transaksi berulang dan rata-rata pengeluaran yang sudah tercatat); jangan memberi kesan sebagai kepastian.
+- Nilai negatif, nominal besar, dan kategori tanpa data harus ditampilkan dengan jelas.
+- Jangan gunakan warna merah sebagai aksen seluruh halaman keuangan. Merah hanya untuk angka negatif/kondisi peringatan yang memang relevan.
+
+## 8.6 Analitik
+
+### Segmen periode
+
+- Harian
+- Pekanan
+- Bulanan
+
+### Analitik kebiasaan
+
+- Persentase rutinitas terjadwal yang dicentang.
+- Perbandingan progres antarhari dalam periode.
+- Rutinitas yang paling konsisten.
+- Rutinitas yang belum stabil, dengan bahasa netral dan saran yang tidak menghakimi.
+- Jumlah hari dengan catatan/refleksi jika pengguna mengaktifkan fitur itu.
+
+### Analitik keuangan
+
+- Pemasukan versus pengeluaran dalam periode terpilih.
+- Komposisi pengeluaran per kategori.
+- Pengeluaran tetap dibandingkan pengeluaran manual.
+- Perkiraan total pengeluaran bulanan.
+- Perbandingan terhadap bulan sebelumnya bila ada data cukup.
+
+### Aturan data
+
+- Statistik dihitung dari catatan yang tersimpan lokal.
+- Hari tanpa data harus dibedakan dari hari dengan nol aktivitas.
+- Untuk periode yang belum selesai, gunakan label **berjalan**.
+- Jangan menilai kualitas keimanan pengguna atau menggabungkan checklist menjadi skor religius.
+- Sediakan penjelasan singkat tentang bagaimana persentase dihitung.
+
+## 8.7 Pengaturan
+
+Bagi pengaturan menjadi kelompok dengan label yang jelas:
+
+1. **Tampilan:** gaya tema, mode terang/gelap, warna, font, ukuran, tinggi baris, kerapatan, gerakan.
+2. **Bahasa:** Indonesia / العربية.
+3. **Salat:** lokasi (izin perangkat atau input manual), metode perhitungan, mazhab/asar bila didukung library, koreksi waktu, format 12/24 jam.
+4. **Kalender:** penyesuaian Hijriah, zona waktu, penjelasan estimasi kalender.
+5. **Al-Qur'an:** target halaman harian, progres harian, dan awal/akhir hitungan hari jika diperlukan.
+6. **Pengingat:** opsi pengingat lokal yang didukung browser/perangkat; jelaskan bahwa dukungan dapat berbeda pada iOS/Android/browser.
+7. **Data:** ekspor, impor, dan penghapusan data lokal.
+8. **Profil:** nama tampilan, keluar/ganti profil.
+9. **Tentang:** versi aplikasi, privasi lokal, informasi perhitungan.
+
+Pengaturan yang penting untuk keamanan/kehilangan data seperti hapus semua data harus dipisahkan secara visual dari opsi tampilan dan memerlukan konfirmasi eksplisit.
+
+## 8.8 Panel Kustomisasi Tema
+
+### Layout mobile
+
+- Header: **Personalisasi tampilan**.
+- Empat kartu tema dengan preview mini, nama, deskripsi 1 baris, dan tanda tema aktif.
+- Mode warna berupa segmented control.
+- Bagian **Warna** berupa swatch berlabel; ketuk membuka pilihan warna yang sesuai perangkat.
+- Bagian **Font** berisi select font UI dan font Arab, slider ukuran font dengan nilai persen terlihat, serta pilihan tinggi baris.
+- Bagian **Tampilan** dengan nyaman/ringkas dan gerakan normal/dikurangi.
+- Panel **Pratinjau** dapat dibuka/tutup untuk melihat tampilan tanggal, checklist, CTA, dan kartu keuangan.
+- Bagian bawah berisi **Pulihkan default** dan **Terapkan**; pada ponsel dapat dibuat sticky dengan memperhatikan safe area.
+
+### Interaksi
+
+- Menekan kartu tema mengubah preview instan dan menandai pilihan.
+- Mengubah warna langsung memperbarui swatch dan preview.
+- Slider font mengubah teks sampel dan seluruh preview secara real-time.
+- Jika font belum tersedia secara lokal, jangan mengunduh font dari CDN secara diam-diam. Gunakan fallback dan beri keterangan.
+- Jika kombinasi warna tidak memenuhi kontras, tampilkan peringatan dan saran otomatis.
+- Setelah disimpan, perubahan berlaku di semua halaman dan dipertahankan setelah reload.
+
+---
+
+## 9. Komponen dan State Visual
+
+Semua komponen berikut harus memiliki state default, hover (perangkat pointer), focus-visible, pressed, disabled, loading bila relevan, dan error/success bila relevan.
+
+### Button
+
+Varian: Primary, Secondary, Tertiary/Ghost, Destructive, Icon-only.  
+- Tinggi minimum sekitar 44 px.
+- Primary menggunakan warna utama solid dan teks kontras tinggi.
+- Destructive hanya untuk penghapusan atau tindakan berisiko.
+- Icon-only wajib memiliki accessible name/tooltip yang relevan.
+- State pressed terasa sesuai tema namun tidak menggeser layout.
+
+### Card
+
+Varian: Standard, Elevated, Sunken, Interactive, Summary.  
+- Gunakan gaya elevasi dari token tema.
+- Kartu interactive memiliki indikator fokus dan hover bila tersedia.
+- Jangan menjadikan kartu informasional sebagai tombol tanpa petunjuk interaksi.
+
+### Checklist
+
+- Klik pada checkbox mengubah status dengan cepat dan memperbarui IndexedDB.
+- Label tugas juga boleh mengaktifkan checkbox jika tidak bertentangan dengan kontrol lain di baris tersebut.
+- Status sukses menggunakan ikon centang dan teks/atribut status.
+- Animasi selesai singkat, tidak menghalangi aksi berikutnya.
+
+### Input dan select
+
+- Label selalu terlihat; placeholder bukan pengganti label.
+- Focus ring harus jelas pada semua tema, termasuk Neumorphism dan Glassmorphism.
+- Error memiliki teks penjelas, bukan hanya border merah.
+- Angka keuangan menggunakan `font-variant-numeric: tabular-nums` untuk perbandingan yang mudah.
+- Field tanggal mengikuti urutan lokal dan arah bahasa.
+
+### Chips, badges, dan status
+
+- Gunakan seperlunya untuk kategori, puasa, atau state offline.
+- Jangan memakai badge warna sebagai satu-satunya pembawa makna.
+- Status offline cukup kecil dan tidak berubah menjadi banner besar terus-menerus.
+
+### Dialog, drawer, dan toast
+
+- Dialog konfirmasi untuk penghapusan dan tindakan sulit dibatalkan.
+- Drawer dari bawah cocok untuk pilihan sederhana pada ponsel; form panjang menjadi halaman penuh.
+- Toast memberi konfirmasi singkat setelah tersimpan, tetapi tidak menjadi satu-satunya bukti bahwa data sudah disimpan.
+- Semua dialog memiliki fokus yang terkelola, tombol tutup yang jelas, dan dukungan Escape pada keyboard.
+
+### Empty state
+
+Gunakan ilustrasi/icon lokal yang sederhana, penjelasan singkat, dan satu CTA utama. Contoh: “Belum ada tugas tambahan untuk tanggal ini” diikuti tombol **Tambah tugas**. Hindari empty state yang menyalahkan pengguna.
+
+---
+
+## 10. Bahasa Indonesia, Arab, dan RTL
+
+- Seluruh label antarmuka berasal dari kamus terjemahan, misalnya `id.json` dan `ar.json`.
+- Saat memilih Arab, set `lang="ar"` dan `dir="rtl"` pada root aplikasi.
+- Perhatikan urutan visual ikon, panah kembali/lanjut, breadcrumb, label-field, tombol, dan bottom navigation.
+- Gunakan logical CSS properties (`margin-inline-start`, `padding-inline`, `inset-inline-end`) alih-alih `left/right` untuk layout umum.
+- Nominal, alamat, email, identifier, dan input teknis dapat menggunakan isolasi arah teks atau `dir="ltr"` bila lebih mudah dibaca.
+- Gunakan font Arab yang mengatur sambungan huruf dan harakat dengan benar. Uji di ukuran minimum dan pada angka Hijriah.
+- Jangan mencampur transliterasi dengan aksara Arab dalam label yang sama jika tidak ada kebutuhan.
+- Setiap layar harus diuji secara penuh dalam kedua bahasa, bukan hanya beranda.
+
+---
+
+## 11. Motion dan Feedback
+
+- Transisi tema, tombol, tab, dan checklist berkisar 120–240 ms.
+- Hindari animasi dekoratif yang berjalan tanpa henti.
+- Gunakan animasi untuk menunjukkan perubahan state, bukan hanya mempercantik.
+- Saat tugas dicentang, boleh ada scale/opacity singkat serta perubahan ikon; status tersimpan tetap instan.
+- Hormati `prefers-reduced-motion: reduce` dan pilihan internal pengguna dengan menonaktifkan gerakan non-esensial.
+- Loading skeleton hanya untuk pemuatan yang benar-benar memerlukan waktu. Baca data lokal harus terasa segera.
+- Hindari parallax atau blur berlebihan pada perangkat kelas rendah.
+
+---
+
+## 12. Aksesibilitas dan Keterbacaan
+
+- Semua teks umum harus memiliki rasio kontras yang memenuhi WCAG AA sebagai target desain: 4.5:1 untuk teks normal dan 3:1 untuk teks besar serta komponen grafis penting.
+- Semua kontrol dapat dicapai lewat keyboard dan mempunyai focus indicator yang jelas.
+- Jangan mengandalkan warna saja untuk status selesai, puasa sunnah, error, pemasukan, atau pengeluaran.
+- Ukuran target sentuh minimum 44 × 44 px bila ruang memungkinkan.
+- Teks UI penting tidak boleh terpotong saat font diperbesar hingga 140%.
+- Uji zoom browser 200% dan layar ponsel kecil tanpa hilangnya fungsi.
+- Grafik memiliki ringkasan teks atau tabel alternatif.
+- Gunakan landmark semantik, heading dalam urutan yang logis, label form, dan status yang dapat dibaca screen reader.
+- Pada kontras tinggi, sederhanakan efek visual dan tingkatkan border.
+- Tema kustom tidak boleh menghilangkan garis fokus atau membuat teks tak terlihat.
+
+---
+
+## 13. Implementasi Teknis Design System
+
+### Organisasi file yang disarankan
+
+```text
+src/
+  styles/
+    tokens.css
+    base.css
+    layout.css
+    components.css
+    themes/
+      claymorphism.css
+      neumorphism.css
+      glassmorphism.css
+      skeuomorphism.css
+      themes-dark.css
+  data/
+    theme-presets.js
+    translations/
+      id.json
+      ar.json
+  modules/
+    appearance-settings.js
+    theme-preview.js
+    accessibility.js
+```
+
+Nama file boleh berubah sesuai framework, tetapi token, preset tema, dan logika preferensi harus dipisahkan dari komponen halaman.
+
+### Penerapan tema via atribut root
+
+```html
+<html data-theme="claymorphism" data-color-mode="light" lang="id" dir="ltr">
+```
+
+```css
+[data-theme="claymorphism"] {
+  --color-bg: #F3F5EF;
+  --color-surface: #FFFFFF;
+  --color-surface-sunken: #E8EDE5;
+  --color-primary: #26765D;
+  --color-on-primary: #FFFFFF;
+  --color-text: #203029;
+  --color-text-muted: #68756D;
+  --color-border: #DDE4DA;
+  --radius-md: 18px;
+  --radius-lg: 22px;
+  --shadow-card: 0 8px 20px rgb(42 57 46 / 10%);
+  --blur-surface: 0px;
+}
+
+[data-theme="neumorphism"] {
+  --color-bg: #E8ECE7;
+  --color-surface: #E8ECE7;
+  --color-surface-sunken: #DEE4DD;
+  --color-primary: #276B55;
+  --color-on-primary: #FFFFFF;
+  --color-text: #24312A;
+  --color-text-muted: #5B6A60;
+  --color-border: #C9D2C9;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --shadow-card: 7px 7px 16px rgb(70 82 72 / 15%), -7px -7px 16px rgb(255 255 255 / 80%);
+  --shadow-inset: inset 4px 4px 9px rgb(70 82 72 / 12%), inset -4px -4px 9px rgb(255 255 255 / 85%);
+  --blur-surface: 0px;
+}
+
+[data-theme="glassmorphism"] {
+  --color-bg: #EEF3F0;
+  --color-surface: rgb(255 255 255 / 78%);
+  --color-surface-sunken: rgb(228 237 231 / 88%);
+  --color-primary: #216C56;
+  --color-on-primary: #FFFFFF;
+  --color-text: #1E2C25;
+  --color-text-muted: #5F6F66;
+  --color-border: rgb(255 255 255 / 86%);
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --shadow-card: 0 10px 30px rgb(39 65 51 / 10%);
+  --blur-surface: 16px;
+}
+
+[data-theme="skeuomorphism"] {
+  --color-bg: #F0EEE7;
+  --color-surface: #FBFAF6;
+  --color-surface-sunken: #E5E1D7;
+  --color-primary: #23664F;
+  --color-on-primary: #FFFFFF;
+  --color-text: #2B302B;
+  --color-text-muted: #62685F;
+  --color-border: #D1CDC2;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-card: 0 2px 0 rgb(255 255 255 / 95%) inset, 0 5px 12px rgb(55 53 44 / 12%);
+  --blur-surface: 0px;
+}
+```
+
+Ini hanya contoh token awal. Warna kustom pengguna harus menjadi lapisan override setelah preset tema, sementara token semantik status dan aksesibilitas dijaga tetap valid.
+
+### Aturan render
+
+- Gunakan CSS variables untuk warna, tipografi, border, radius, bayangan, blur, dan jarak.
+- Jangan menulis selector khusus tema untuk setiap halaman. Tema harus memodifikasi token dan beberapa primitive bersama.
+- Gunakan `backdrop-filter` hanya sebagai enhancement.
+- Untuk mode gelap, kombinasikan atribut `data-color-mode="dark"` dengan tema aktif.
+- Saat menyimpan preferensi, gunakan storage yang sama dengan setelan lokal lainnya dan simpan per `activeUserId`.
+- Perubahan theme settings tidak boleh menghapus atau menulis ulang checklist, transaksi, maupun catatan pengguna.
+- Validasi tema dan warna setiap kali data setting dibaca.
+
+### Rekomendasi data preset
+
+```js
+export const THEME_PRESETS = {
+  claymorphism: {
+    label: { id: "Claymorphism", ar: "كلايمورفيزم" },
+    colors: {
+      background: "#F3F5EF",
+      surface: "#FFFFFF",
+      primary: "#26765D",
+      accent: "#D4A95E"
+    },
+    radius: "soft",
+    elevation: "diffuse"
+  },
+  neumorphism: {
+    label: { id: "Neumorphism", ar: "نيومورفيزم" },
+    colors: {
+      background: "#E8ECE7",
+      surface: "#E8ECE7",
+      primary: "#276B55",
+      accent: "#C59A4A"
+    },
+    radius: "medium",
+    elevation: "dual-shadow"
+  },
+  glassmorphism: {
+    label: { id: "Glassmorphism", ar: "غلاس مورفيزم" },
+    colors: {
+      background: "#EEF3F0",
+      surface: "rgba(255,255,255,.78)",
+      primary: "#216C56",
+      accent: "#D1A75F"
+    },
+    radius: "soft",
+    elevation: "glass"
+  },
+  skeuomorphism: {
+    label: { id: "Skeuomorphism", ar: "سكيو مورفيزم" },
+    colors: {
+      background: "#F0EEE7",
+      surface: "#FBFAF6",
+      primary: "#23664F",
+      accent: "#C49A4B"
+    },
+    radius: "structured",
+    elevation: "bevel"
+  }
+};
+```
+
+Data preset adalah contoh awal; label Arab harus ditinjau oleh penutur yang sesuai sebelum rilis. Jangan mengizinkan nilai CSS arbitrer yang tidak divalidasi jika preferensi dapat diimpor dari JSON.
+
+---
+
+## 14. Keamanan, Privasi, dan Data Offline dalam UI
+
+- Tampilkan keterangan bahwa data disimpan di perangkat/browser ini.
+- Jangan menampilkan lokasi tepat atau detail keuangan pada notifikasi/toast yang berpotensi terlihat di layar terkunci.
+- Minta izin lokasi hanya setelah pengguna memilih fitur waktu salat dan menjelaskan kegunaannya.
+- Jika izin lokasi ditolak, berikan input lokasi manual dan jangan memblokir fitur lain.
+- Ekspor/impor harus memiliki pratinjau jumlah data yang akan dipulihkan, pemeriksaan format, dan pilihan mengganti atau menggabungkan data bila didukung.
+- Hapus data lokal memerlukan langkah konfirmasi kedua dan nama tindakan yang eksplisit.
+- Jangan menyebut data aman hanya karena offline; gunakan bahasa “tersimpan lokal” dan jelaskan batasannya.
+
+---
+
+## 15. Kinerja dan Ketahanan Tampilan
+
+- Semua font yang menjadi pilihan harus dibundel lokal atau memiliki fallback lokal yang layak.
+- Semua ikon, pattern, dan ilustrasi inti harus dapat tampil tanpa memuat CDN.
+- Efek blur, bayangan bertumpuk, dan tekstur harus dibatasi agar scrolling tetap lancar pada perangkat kelas menengah/rendah.
+- Glassmorphism memiliki fallback jika `backdrop-filter` tidak didukung.
+- Saat cache/font gagal, aplikasi tetap tampil memakai fallback dan memberi tahu seperlunya; halaman tidak boleh blank.
+- Preferensi tema dimuat sedini mungkin untuk mengurangi flash tema yang salah saat aplikasi dibuka.
+- Gunakan ukuran ikon konsisten (misalnya 20–24 px navigasi; 16–20 px metadata), bukan ukuran acak di tiap layar.
+
+---
+
+## 16. Kriteria Penerimaan Desain
+
+### Tema
+
+- [ ] Pengguna dapat memilih keempat tema dari Pengaturan.
+- [ ] Tiap tema memiliki karakter visual yang jelas pada beranda, rutinitas, keuangan, dialog, input, dan bottom navigation.
+- [ ] Pemilihan tema tidak mereset bahasa, lokasi, target Al-Qur'an, atau data lain.
+- [ ] Mode Terang, Gelap, dan Ikuti sistem berfungsi pada semua tema.
+- [ ] Tema tetap tampil benar setelah reload dan ketika offline.
+
+### Kustomisasi
+
+- [ ] Pengguna dapat mengubah warna primer, aksen, latar, dan permukaan.
+- [ ] Pengguna dapat memilih font UI dan font Arab yang tersedia lokal.
+- [ ] Ukuran font dapat diubah setidaknya dari 85% sampai 140%.
+- [ ] Tinggi baris dan kepadatan tampilan dapat diubah.
+- [ ] Tersedia pratinjau, terapkan/batalkan atau urungkan, serta reset ke default.
+- [ ] Kombinasi warna dengan kontras yang rendah menghasilkan peringatan atau penyesuaian otomatis.
+- [ ] Preferensi kustom disimpan lokal per profil dan dipulihkan dengan benar.
+
+### Layout dan navigasi
+
+- [ ] Bottom navigation tidak menutupi konten atau tombol pada perangkat dengan safe area.
+- [ ] Aplikasi dapat digunakan pada lebar 360 px tanpa gulir horizontal umum.
+- [ ] Semua target sentuh penting berukuran memadai.
+- [ ] Mode RTL mencerminkan layout Arab secara menyeluruh.
+- [ ] Ukuran font besar tidak membuat aksi penting hilang.
+
+### Aksesibilitas
+
+- [ ] Fokus keyboard terlihat pada keempat tema.
+- [ ] Status tugas dan kategori tidak bergantung pada warna saja.
+- [ ] Reduced motion didukung.
+- [ ] Informasi grafik disediakan dalam ringkasan teks/angka.
+- [ ] Kontras teks dan komponen penting diuji pada setiap tema serta mode gelap.
+
+### Fitur utama
+
+- [ ] Checklist tetap terbaca dalam semua tema dan dapat dicentang dengan cepat.
+- [ ] Tanggal Hijriah selalu lebih menonjol daripada tanggal Masehi pada kartu tanggal.
+- [ ] Angka nominal memiliki perataan yang baik dan mudah dibandingkan.
+- [ ] Form tambah/edit tugas dan transaksi dapat dipakai dalam bahasa Indonesia maupun Arab.
+- [ ] Kegagalan font, blur, atau efek grafis tidak memblokir fungsi inti aplikasi.
+
+---
+
+## 17. Prioritas Implementasi
+
+### Tahap 1 — fondasi
+
+- Token CSS dasar dan komponen global.
+- Claymorphism sebagai tema default.
+- Sistem atribut tema dan penyimpanan preferensi.
+- Layout mobile-first dan bottom navigation.
+- Bahasa Indonesia dan RTL dasar.
+
+### Tahap 2 — empat tema
+
+- Neumorphism, Glassmorphism, dan Skeuomorphism.
+- Mode terang/gelap untuk seluruh tema.
+- Fallback Glassmorphism dan mode kontras tinggi.
+- Pemeriksaan konsistensi di semua komponen umum.
+
+### Tahap 3 — personalisasi lanjutan
+
+- Color picker dan palet preset.
+- Font UI dan font Arab lokal.
+- Slider ukuran font, tinggi baris, serta kepadatan.
+- Preview live, apply/cancel/reset, dan validasi kontras.
+
+### Tahap 4 — QA visual
+
+- Uji ponsel 360 px, 390 px, tablet, dan desktop.
+- Uji semua tema pada Beranda, Rutinitas, Keuangan, Analitik, Pengaturan, dialog, dan form.
+- Uji Indonesia/Arab, terang/gelap, ukuran font 85%/100%/140%, offline, dan fallback tanpa blur.
+- Tinjau aksesibilitas, performa scrolling, dan konsistensi token.
+
+---
+
+## 18. Instruksi Akhir untuk Developer / AI Coding Agent
+
+Implementasikan desain berdasarkan dokumen ini dan `prod.md`. Bangun satu design system berbasis token, bukan empat aplikasi dengan styling terpisah. Empat tema harus mengganti bahasa visual melalui token dan primitive komponen yang sama. Seluruh halaman inti wajib menggunakan token untuk warna, font, radius, bayangan, dan ruang.
+
+Prioritas pengerjaan adalah: **keterbacaan → fungsi → aksesibilitas → konsistensi → dekorasi**. Jangan mengorbankan keterbacaan demi efek 3D, blur, atau transparansi. Jangan mengubah kebutuhan produk yang telah ditentukan dalam `prod.md` hanya demi penampilan. Semua pilihan tampilan disimpan lokal, bekerja offline, dan tidak boleh mengubah atau menghapus data aplikasi.

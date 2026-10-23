@@ -1,0 +1,13 @@
+{
+  "id": "/",
+  "name": "Sakinah — Muslim Daily Planner",
+  "short_name": "Sakinah",
+  "description": "Ruang tenang untuk ibadah, rutinitas, catatan, dan keuangan harian.",
+  "lang": "id",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f5ef",
+  "theme_color": "#26765d",
+  "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
