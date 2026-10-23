@@ -35,7 +35,7 @@ test('monthly tasks clamp 31 to the last day; repeat generation is idempotent', 
   const data = emptyProfile('personal'); data.tasks.push(task);
   assert.equal(ensureDay(data, '2026-02-28'), true);
   assert.equal(ensureDay(data, '2026-02-28'), false);
-  assert.equal(data.days['2026-02-28'].items.length, 12);
+  assert.equal(data.days['2026-02-28'].items.length, 7);
   data.settings.quranTargetPages = 5;
   ensureDay(data, '2026-03-01');
   assert.equal(data.days['2026-02-28'].targetPages, 2);

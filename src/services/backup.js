@@ -1,5 +1,6 @@
-import { DEFAULT_ITEMS, THEMES, TASK_CATEGORIES, FINANCE_CATEGORIES, PRAYERS } from '../data/presets.js';
+import { DEFAULT_ITEMS, LEGACY_DEFAULT_ITEMS, THEMES, TASK_CATEGORIES, FINANCE_CATEGORIES, PRAYERS } from '../data/presets.js';
 import { addDays } from './dates.js';
+import { migrateProfile } from './migrations.js';
 const fail = () => { throw new Error('INVALID_BACKUP'); };
 const object = v => v && typeof v === 'object' && !Array.isArray(v);
 const string = (v, max = 200) => typeof v === 'string' && v.length <= max;
@@ -22,31 +23,37 @@ export function validateSettings(s) {
   return s;
 }
 export function validateBackup(input) {
-  if (!object(input) || input.app !== 'yawm' || input.schemaVersion !== 1 || !object(input.data)) fail();
+  if (!object(input) || !member(input.app, ['yawm', 'sakinah']) || !member(input.schemaVersion, [1, 2]) || !object(input.data)) fail();
   const d = input.data;
-  if (d.schemaVersion !== 1 || !key(d.userId) || !object(d.days) || !object(d.notes) || !object(d.fasting)) fail();
+  if (d.schemaVersion !== input.schemaVersion || !key(d.userId) || !object(d.days) || !object(d.notes) || !object(d.fasting)) fail();
   validateSettings(d.settings);
-  for (const field of ['tasks', 'transactions', 'recurringExpenses']) {
+  for (const field of ['tasks', 'transactions', 'recurringExpenses', ...(d.schemaVersion === 2 ? ['habits'] : [])]) {
     if (!Array.isArray(d[field]) || d[field].length > 20000 || new Set(d[field].map(r => r.id)).size !== d[field].length) fail();
     for (const row of d[field]) if (!object(row) || !key(row.id) || row.userId !== d.userId) fail();
   }
+  if (d.schemaVersion === 2 && new Set([...d.tasks, ...d.habits].map(row => row.id)).size !== d.tasks.length + d.habits.length) fail();
   for (const [dayKey, day] of Object.entries(d.days)) {
     if (!date(dayKey) || !object(day) || day.date !== dayKey || day.userId !== d.userId || !integer(day.targetPages, 1, 1000) || !integer(day.completedPages, 0, 100000) || !Array.isArray(day.items) || day.items.length > 1000 || new Set(day.items.map(i => i.id)).size !== day.items.length) fail();
-    if (day.items.filter(i => i.source === 'default').length !== DEFAULT_ITEMS.length) fail();
+    if (d.schemaVersion === 1 && day.items.filter(i => i.source === 'default').length !== LEGACY_DEFAULT_ITEMS.length) fail();
+    if (day.legacyPrayerItems !== undefined && (!Array.isArray(day.legacyPrayerItems) || day.legacyPrayerItems.length > 5 || day.legacyPrayerItems.some(i => !object(i) || i.userId !== d.userId || !PRAYERS.includes(i.templateKey) || !bool(i.completed)))) fail();
     for (const item of day.items) {
-      if (!object(item) || !key(item.id) || item.userId !== d.userId || !bool(item.completed) || !member(item.source, ['default', 'custom']) || !member(item.category, ['ibadah', ...TASK_CATEGORIES])) fail();
-      if (item.source === 'default' && (!member(item.templateKey, DEFAULT_ITEMS) || item.id !== `default:${item.templateKey}` || item.category !== 'ibadah')) fail();
-      if (item.source === 'custom' && (!string(item.title) || !member(item.priority, ['normal', 'important']))) fail();
+      if (!object(item) || !key(item.id) || item.userId !== d.userId || !bool(item.completed) || !member(item.source, ['default', 'custom', ...(d.schemaVersion === 2 ? ['habit'] : [])]) || !member(item.category, ['ibadah', ...TASK_CATEGORIES])) fail();
+      if (item.source === 'default' && (!member(item.templateKey, d.schemaVersion === 1 ? LEGACY_DEFAULT_ITEMS : DEFAULT_ITEMS) || item.id !== `default:${item.templateKey}` || item.category !== 'ibadah')) fail();
+      if (item.source !== 'default' && (!string(item.title) || !member(item.priority, ['normal', 'important']))) fail();
       if (item.time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(item.time)) fail();
       if (item.description !== undefined && !string(item.description, 5000)) fail();
     }
   }
   for (const [k, n] of Object.entries(d.notes)) if (!date(k) || !object(n) || n.userId !== d.userId || !string(n.content, 5000)) fail();
   for (const [k, f] of Object.entries(d.fasting)) if (!date(k) || !object(f) || f.userId !== d.userId || !member(f.status, ['planned', 'completed', 'skipped', ''])) fail();
-  for (const task of d.tasks) {
-    if (task.id.startsWith('default:') || (task.reminder !== undefined && !bool(task.reminder))) fail();
-    if (!string(task.title) || !task.title.trim() || !string(task.description, 5000) || !date(task.date) || !member(task.category, TASK_CATEGORIES) || !member(task.scheduleType, ['once', 'daily', 'weekly', 'monthly']) || !member(task.priority, ['normal', 'important']) || !bool(task.active) || !Array.isArray(task.weekdays) || !task.weekdays.every(n => integer(n, 0, 6)) || (task.scheduleType === 'weekly' && !task.weekdays.length)) fail();
+  for (const task of [...d.tasks, ...(d.habits || [])]) {
+    const isDefault = d.schemaVersion === 2 && (d.habits || []).includes(task) && DEFAULT_ITEMS.includes(task.templateKey) && task.id === `default:${task.templateKey}`;
+    if ((!isDefault && task.id.startsWith('default:')) || (task.reminder !== undefined && !bool(task.reminder))) fail();
+    if (!string(task.title) || (!isDefault && !task.title.trim()) || !string(task.description, 5000) || !date(task.date) || !member(task.category, TASK_CATEGORIES) || !member(task.scheduleType, ['once', 'daily', 'weekly', 'monthly']) || !member(task.priority, ['normal', 'important']) || !bool(task.active) || !Array.isArray(task.weekdays) || !task.weekdays.every(n => integer(n, 0, 6)) || (task.scheduleType === 'weekly' && !task.weekdays.length)) fail();
     if (task.time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(task.time)) fail();
+    if (task.kind !== undefined && !member(task.kind, ['todo', 'event'])) fail();
+    if (task.calendar !== undefined && !member(task.calendar, ['hijri', 'gregorian'])) fail();
+    if (task.reminderMinutes !== undefined && !member(task.reminderMinutes, [0, 15, 30, 60, 1440])) fail();
   }
   for (const tx of d.transactions) if (!member(tx.type, ['income', 'expense']) || !integer(tx.amount, 1, 999999999999) || !date(tx.date) || !string(tx.title) || !tx.title.trim() || !string(tx.note, 5000) || !member(tx.categoryId, [...FINANCE_CATEGORIES, 'salary', 'business', 'gift']) || (tx.recurringExpenseId && (!key(tx.recurringExpenseId) || !date(tx.occurrenceDate)))) fail();
   const payments = d.transactions.filter(tx => tx.recurringExpenseId);
@@ -55,17 +62,18 @@ export function validateBackup(input) {
   // Reject prototype-pollution keys anywhere before merge, and limit payload size.
   const raw = JSON.stringify(input);
   if (raw.length > 5 * 1024 * 1024 || /"(?:__proto__|constructor|prototype)"\s*:/.test(raw)) fail();
-  return structuredClone(d);
+  return migrateProfile(d);
 }
-export const makeBackup = data => ({ app: 'yawm', schemaVersion: 1, exportedAt: new Date().toISOString(), data });
+export const makeBackup = data => ({ app: 'yawm', schemaVersion: data.schemaVersion, exportedAt: new Date().toISOString(), data });
 export function restoreBackup(current, imported, mode) {
   const incoming = structuredClone(imported);
   incoming.userId = current.userId;
-  for (const rows of [incoming.tasks, incoming.transactions, incoming.recurringExpenses, Object.values(incoming.notes), Object.values(incoming.fasting), Object.values(incoming.days)]) for (const row of rows) row.userId = current.userId;
+  for (const rows of [incoming.tasks, incoming.habits, incoming.transactions, incoming.recurringExpenses, Object.values(incoming.notes), Object.values(incoming.fasting), Object.values(incoming.days)]) for (const row of rows) row.userId = current.userId;
   for (const day of Object.values(incoming.days)) for (const item of day.items) item.userId = current.userId;
+  for (const day of Object.values(incoming.days)) for (const item of day.legacyPrayerItems || []) item.userId = current.userId;
   if (mode === 'replace') return incoming;
   const combined = structuredClone(current);
-  for (const field of ['tasks', 'transactions', 'recurringExpenses']) combined[field] = [...new Map([...current[field], ...incoming[field]].map(r => [r.id, r])).values()];
+  for (const field of ['tasks', 'habits', 'transactions', 'recurringExpenses']) combined[field] = [...new Map([...current[field], ...incoming[field]].map(r => [r.id, r])).values()];
   combined.transactions = [...new Map(combined.transactions.map(tx => [tx.recurringExpenseId ? `payment:${tx.recurringExpenseId}:${tx.occurrenceDate}` : `transaction:${tx.id}`, tx])).values()];
   for (const field of ['days', 'notes', 'fasting']) combined[field] = { ...current[field], ...incoming[field] };
   return combined;

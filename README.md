@@ -1,4 +1,4 @@
-# Sakinah · Muslim Daily Planner
+# Yawm · Muslim Daily Planner
 
 Implementasi frontend PWA dari `prod.md` dan `design.prod`, memakai JavaScript ES modules, Vite, Adhan, dan IndexedDB. Tidak ada backend, CDN, pelacakan, atau layanan lokasi eksternal.
 
@@ -23,10 +23,13 @@ npm run preview
 ## Fitur
 
 - Dua profil lokal terpisah; definisinya ada di `src/data/users.js`. Nama tampilan bisa disesuaikan. Profil lokal adalah pemilihan identitas, bukan autentikasi aman. Tidak ada password rahasia di source.
-- Sebelas checklist ibadah setiap tanggal, riwayat yang dapat diedit, target Al-Qur’an per hari, pencatatan halaman, serta catatan harian hingga 5.000 karakter.
-- Tugas tambahan empat kategori, prioritas, waktu, pengulangan sekali/harian/pekanan/bulanan, arsip, dan pengingat saat aplikasi terbuka. Aktifkan pengingat tugas bersama waktu. Tanggal bulanan 29–31 menyesuaikan akhir bulan.
+- Beranda berisi tanggal Hijriah, tujuh tanggal pekanan dengan penanda kegiatan, to-do harian, kegiatan terdekat, jadwal salat, progres Al-Qur’an, dan catatan. Checklist ibadah dan ringkasan keuangan tidak ditampilkan di Beranda. To-do mempunyai tombol status selesai, edit, dan hapus.
+- Halaman Kebiasaan menyediakan habit tracker terpisah: enam kebiasaan sunah/zikir/Al-Qur’an sebagai awal, tambah manual, edit, hapus, pengulangan harian/pekanan/bulanan, dan status per tanggal dengan matriks pekanan. Salat wajib hanya berupa jadwal, bukan checklist dan tidak masuk persentase kebiasaan.
+- Kegiatan kalender dan to-do mendukung kategori, waktu, prioritas, pengulangan, dan pengingat saat aplikasi terbuka: saat mulai, 15/30 menit, 1 jam, atau 1 hari sebelumnya. Pengingat yang sudah memasuki waktunya muncul sebagai panel di Beranda dan pesan singkat. Kegiatan terdekat dihitung sampai 30 hari mendatang, termasuk tanggal yang belum pernah dibuka.
+- Target Al-Qur’an dan jumlah halaman dapat diedit per tanggal melalui Atur progres. Perubahan target umum di Pengaturan langsung berlaku untuk hari ini dan hari mendatang, termasuk tanggal yang pernah dibuka; progres tetap ada dan target hari lampau dipertahankan. Status kebiasaan membaca dan progres halaman selalu disinkronkan.
 - Waktu salat dihitung lokal dengan [Adhan](https://github.com/batoulapps/adhan-js), yang ikut dibundel. Lokasi awal kosong; pilih kota lokal, koordinat manual, atau izin geolokasi. Default metode Singapore, Asar standar; tersedia enam metode serta koreksi menit per salat. Periksa kesesuaian dengan rujukan lokal.
-- Kalender Hijriah memakai kalender `islamic-umalqura` melalui mesin Intl bawaan browser, tanpa permintaan jaringan. Ada penyesuaian −2 hingga +2 hari, kalender bulanan, penanda Senin/Kamis/Ayyamul Bidh, dan status puasa. Tanggal merupakan estimasi, bukan penetapan resmi.
+- Kalender dan pemilih tanggal memakai Hijriah (`islamic-umalqura` melalui Intl), termasuk kegiatan, kebiasaan, transaksi, periode keuangan, dan analitik bulanan. Tanggal Masehi hanya menjadi keterangan sekunder dan format ISO untuk penyimpanan. Ada penyesuaian −2 hingga +2 hari; tanggal Hijriah yang tidak tersedia ditolak. Kalender menandai kegiatan serta Senin/Kamis/Ayyamul Bidh. Tanggal merupakan estimasi, bukan penetapan resmi.
+- Pengulangan bulanan kegiatan/kebiasaan baru mengikuti Hijriah secara default dan menyesuaikan hari terakhir bulan 29/30. Pola Masehi lama dipertahankan saat migrasi dan dapat dipilih pada formulir. Jatuh tempo tagihan bulanan tetap memakai tanggal Masehi 1–31 agar siklus tagihan yang telah dibuat tidak bergeser; keterangannya tersedia di formulir tagihan.
 - Transaksi pemasukan/pengeluaran dengan edit/hapus, filter bulan dan rentang tanggal, template tagihan mingguan/bulanan/tahunan, dan pembayaran aktual terpisah. Uang disimpan sebagai integer rupiah. Filter rentang mengubah saldo/transaksi periode; proyeksi tetap merujuk seluruh bulan terpilih.
 - Proyeksi = pengeluaran aktual hingga hari ini + tagihan belum dibayar yang jatuh tempo mulai hari ini hingga akhir bulan. Pembayaran terkait memakai pasangan ID template/tanggal kejadian untuk mencegah hitungan ganda. Perubahan template tidak mengubah nominal transaksi lampau.
 - Analitik harian/pekanan/bulanan dari data tersimpan, penyelesaian tugas yang sudah relevan, statistik halaman dan catatan, tren, kategori pengeluaran, dan perbandingan bulan sebelumnya. Hari tanpa data ditandai “—”, bukan dianggap nol.
@@ -36,13 +39,13 @@ npm run preview
 
 ## Penyimpanan dan cadangan
 
-IndexedDB `sakinah-planner` menyimpan satu snapshot terstruktur per `userId` di store `profiles`. Snapshot mencakup hari, item dengan waktu perubahan, template, transaksi, catatan, status puasa, dan pengaturan. Penulisan per profil bersifat atomik dan antre; UI baru memperbarui data setelah transaksi database selesai. `localStorage` hanya menyimpan pilihan profil aktif dan bahasa login.
+IndexedDB `yawm-planner` menyimpan satu snapshot terstruktur per `userId` di store `profiles`. Skema data v2 memisahkan `habits` dan `tasks`, dengan status per tanggal dalam `days`. Versi skema v1 dimigrasikan saat dibaca: tugas berulang lama menjadi kebiasaan, dan catatan salat wajib dipertahankan sebagai `legacyPrayerItems` dalam cadangan tanpa menjadi checklist/analitik. Penulisan per profil bersifat atomik dan antre; UI baru memperbarui data setelah transaksi database selesai. `localStorage` hanya menyimpan pilihan profil aktif dan bahasa login.
 
-Ekspor melalui **Pengaturan → Data & cadangan → Ekspor JSON**. Cadangan menyertakan refleksi dan keuangan profil aktif; simpan berkas dengan baik. Impor menerima skema v1 hingga 5 MB dengan pemeriksaan nilai, tanggal, kategori, warna, profil, dan pembayaran duplikat. Pemulihan selalu menulis ke profil aktif. Gabung mempertahankan pengaturan saat ini; record dengan ID/tanggal sama memakai versi dari cadangan. Ganti menimpa seluruh data profil aktif dan memerlukan penegasan kedua. Profil lain tidak berubah.
+Ekspor melalui **Pengaturan → Data & cadangan → Ekspor JSON**. Cadangan menyertakan kegiatan, kebiasaan, refleksi, dan keuangan profil aktif; simpan berkas dengan baik. Impor menerima skema v1/v2 hingga 5 MB, termasuk cadangan dengan penanda aplikasi lama `sakinah`, dengan pemeriksaan nilai, tanggal, kategori, warna, profil, dan pembayaran duplikat. Pemulihan selalu menulis ke profil aktif. Gabung mempertahankan pengaturan saat ini; record dengan ID/tanggal sama memakai versi dari cadangan. Ganti menimpa seluruh data profil aktif dan memerlukan penegasan kedua. Profil lain tidak berubah.
 
 Penggantian browser, origin/port, profil browser, penghapusan storage, atau perangkat membuat penyimpanan berbeda. Data tidak otomatis tersinkronisasi. Siapa pun yang dapat membuka profil browser bisa mengakses catatan lokal; offline tidak berarti terenkripsi. Hindari memakai dua tab untuk mengedit profil yang sama bersamaan karena snapshot tab terakhir dapat menimpa perubahan tab lain.
 
-Target Al-Qur’an disalin ketika sebuah tanggal pertama kali dibuka, termasuk tanggal masa depan. Perubahan target berlaku untuk tanggal yang belum memiliki catatan dan tidak mengubah snapshot yang sudah ada. Riwayat template tugas yang diarsipkan/dihapus tetap tersedia pada tanggal lampau.
+Target Al-Qur’an awal disalin ketika sebuah tanggal pertama kali dibuka. Mengubah target umum memperbarui target mulai hari ini, termasuk tanggal mendatang yang pernah dibuka, tanpa menghapus halaman yang telah dibaca. Target tanggal lampau hanya berubah bila diedit secara eksplisit lewat Atur progres pada tanggal tersebut. Snapshot kebiasaan yang sudah dilakukan dipertahankan ketika template dihapus.
 
 ## Deployment dan offline
 
@@ -56,4 +59,4 @@ Instal dari menu browser **Instal aplikasi / Tambahkan ke layar utama**, atau to
 
 ## Struktur
 
-`src/data/` berisi profil/preset; `src/services/` memisahkan kalender, salat, rutinitas/analitik, keuangan, tampilan dan cadangan; `src/db.js` menangani IndexedDB; `src/i18n.js` kamus dua bahasa; `src/styles/` token dan primitive visual; `src/app.js` layar dan interaksi. `public/` berisi manifest/ikon, `scripts/` generator cache, dan `tests/` pengujian domain.
+`src/data/` berisi profil/preset; `src/services/` memisahkan kalender, agenda/pengingat, salat, kebiasaan/analitik, keuangan, migrasi, tampilan, dan cadangan; `src/screens/` memuat Beranda, habit tracker, dan kalender; `src/db.js` menangani IndexedDB; `src/i18n.js` kamus dua bahasa; `src/styles/` token dan primitive visual; `src/app.js` menghubungkan layar, formulir, dan interaksi. `public/` berisi manifest/ikon, `scripts/` generator cache, dan `tests/` pengujian domain.

@@ -15,7 +15,13 @@ export const DEFAULT_SETTINGS = {
 export const TASK_CATEGORIES = ['islami', 'kesehatan', 'produktivitas', 'olahraga'];
 export const FINANCE_CATEGORIES = ['daily', 'food', 'transport', 'home', 'education', 'health', 'charity', 'leisure', 'other'];
 export const PRAYERS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
-export const DEFAULT_ITEMS = [...PRAYERS, 'rawatib', 'morning', 'evening', 'duha', 'quran', 'bedtime'];
+export const DEFAULT_ITEMS = ['rawatib', 'morning', 'evening', 'duha', 'quran', 'bedtime'];
+export const LEGACY_DEFAULT_ITEMS = [...PRAYERS, ...DEFAULT_ITEMS];
+export const createDefaultHabits = userId => DEFAULT_ITEMS.map(templateKey => ({
+  id: `default:${templateKey}`, userId, templateKey, title: '', description: '', category: 'islami',
+  date: '1900-01-01', scheduleType: 'daily', weekdays: [0, 1, 2, 3, 4, 5, 6],
+  priority: 'normal', active: true, time: '', reminder: false, calendar: 'hijri',
+}));
 export const CITIES = [
   { name: 'Jakarta', latitude: -6.2088, longitude: 106.8456, timezone: 'Asia/Jakarta' },
   { name: 'Bandung', latitude: -6.9175, longitude: 107.6191, timezone: 'Asia/Jakarta' },

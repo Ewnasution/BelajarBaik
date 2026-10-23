@@ -15,7 +15,7 @@ export function occurrences(template, start, end) {
   return result;
 }
 export function financeSummary(data, month, today, range = {}) {
-  const { start, end } = monthRange(month);
+  const { start, end } = range.calendarBounds || monthRange(month);
   const monthlyTransactions = data.transactions.filter(t => t.date >= start && t.date <= end);
   const transactions = monthlyTransactions.filter(t => (!range.start || t.date >= range.start) && (!range.end || t.date <= range.end));
   const income = transactions.filter(t => t.type === 'income').reduce((n, t) => n + t.amount, 0);

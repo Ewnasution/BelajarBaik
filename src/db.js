@@ -1,4 +1,5 @@
-import { DEFAULT_SETTINGS } from './data/presets.js';
+import { DEFAULT_SETTINGS, createDefaultHabits } from './data/presets.js';
+import { migrateProfile } from './services/migrations.js';
 let database;
 export function openDB() {
   return new Promise((resolve, reject) => {
@@ -16,10 +17,10 @@ export function loadProfile(userId) {
   return new Promise((resolve, reject) => {
     const req = database.transaction('profiles').objectStore('profiles').get(userId);
     req.onerror = () => reject(req.error);
-    req.onsuccess = () => resolve(req.result || emptyProfile(userId));
+    req.onsuccess = () => { try { resolve(req.result ? migrateProfile(req.result) : emptyProfile(userId)); } catch (error) { reject(error); } };
   });
 }
-export const emptyProfile = userId => ({ schemaVersion: 1, userId, settings: structuredClone(DEFAULT_SETTINGS), days: {}, tasks: [], notes: {}, fasting: {}, transactions: [], recurringExpenses: [] });
+export const emptyProfile = userId => ({ schemaVersion: 2, userId, settings: structuredClone(DEFAULT_SETTINGS), days: {}, tasks: [], habits: createDefaultHabits(userId), notes: {}, fasting: {}, transactions: [], recurringExpenses: [] });
 export function saveProfile(profile) {
   return new Promise((resolve, reject) => {
     const tx = database.transaction('profiles', 'readwrite');
