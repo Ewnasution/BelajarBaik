@@ -1,3 +1,12 @@
+import { FIRST_YEAR, FIRST_MONTH, FIRST_DAY, MONTH_LENGTHS } from '../data/hijri-calendar.js';
+
+const monthStarts = [FIRST_DAY];
+for (const length of MONTH_LENGTHS) monthStarts.push(monthStarts.at(-1) + 29 + Number(length));
+const hijriMonths = {
+  id: ['Muharam', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jumadilawal', 'Jumadilakhir', 'Rajab', 'Syaban', 'Ramadan', 'Syawal', 'Zulkaidah', 'Zulhijah'],
+  ar: ['محرم', 'صفر', 'ربيع الأول', 'ربيع الآخر', 'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'],
+};
+const hijriNumber = (value, language) => language === 'ar' ? String(value).replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[Number(digit)]) : String(value);
 export function dateKey(date = new Date(), timezone = 'Asia/Jakarta') {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date);
   return ['year', 'month', 'day'].map(k => parts.find(p => p.type === k).value).join('-');
@@ -9,11 +18,17 @@ export function addDays(key, amount) {
 }
 export const weekday = key => parseDate(key).getDay();
 export function hijri(key, offset = 0, language = 'id') {
-  const d = parseDate(addDays(key, offset));
-  const format = new Intl.DateTimeFormat(`${language === 'ar' ? 'ar-SA' : 'id-ID'}-u-ca-islamic-umalqura`, { day: 'numeric', month: 'long', year: 'numeric' });
-  const numeric = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', { day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(d);
-  const num = k => Number(numeric.find(p => p.type === k)?.value);
-  return { label: format.format(d), day: num('day'), month: num('month'), year: num('year') };
+  const epoch = Date.parse(`${key}T00:00:00Z`) / 86400000 + offset;
+  if (!Number.isInteger(epoch) || epoch < monthStarts[0] || epoch >= monthStarts.at(-1)) throw new RangeError('Date outside supported Hijri calendar');
+  let low = 0, high = monthStarts.length - 1;
+  while (low + 1 < high) {
+    const middle = Math.floor((low + high) / 2);
+    if (monthStarts[middle] <= epoch) low = middle; else high = middle;
+  }
+  const index = FIRST_MONTH - 1 + low;
+  const day = epoch - monthStarts[low] + 1, month = index % 12 + 1, year = FIRST_YEAR + Math.floor(index / 12);
+  const lang = language === 'ar' ? 'ar' : 'id';
+  return { label: `${hijriNumber(day, lang)} ${hijriMonths[lang][month - 1]} ${hijriNumber(year, lang)} ${lang === 'ar' ? 'هـ' : 'H'}`, day, month, year };
 }
 export function gregorian(key, language = 'id', options = {}) {
   return new Intl.DateTimeFormat(language === 'ar' ? 'ar-SA-u-ca-gregory' : 'id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', ...options }).format(parseDate(key));
@@ -43,7 +58,8 @@ export function hijriMonthRange(key, offset = 0) {
   return { start, end: addDays(next, -1), next, length: hijri(addDays(next, -1), offset).day };
 }
 export function hijriMonthLabel(key, offset = 0, language = 'id') {
-  return new Intl.DateTimeFormat(`${language === 'ar' ? 'ar-SA' : 'id-ID'}-u-ca-islamic-umalqura`, { month: 'long', year: 'numeric' }).format(parseDate(addDays(key, offset)));
+  const h = hijri(key, offset, language), lang = language === 'ar' ? 'ar' : 'id';
+  return `${hijriMonths[lang][h.month - 1]} ${hijriNumber(h.year, lang)} ${lang === 'ar' ? 'هـ' : 'H'}`;
 }
 export function fromHijri(year, month, day, offset = 0) {
   if (![year, month, day].every(Number.isSafeInteger) || month < 1 || month > 12 || day < 1 || day > 30) return null;
